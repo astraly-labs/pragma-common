@@ -1,0 +1,39 @@
+[package]
+name = "pragma-common"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.81"
+categories = ["utilities"]
+description = "Pragma Common types for Rust"
+authors = ["Pragma <support@pragma.build>"]
+keywords = ["pragma", "common", "utils"]
+repository = "https://github.com/astraly-labs/pragma-common"
+license = "MIT"
+
+[dependencies]
+anyhow = { version = "1" }
+serde = { version = "1.0", features = ["derive"] }
+
+# Open telemtry related crates. There is a lot of inter-dependency
+# because of the current state of OTEL in rust.
+# We must be mindful in we update the version of one crate, see:
+# <https://github.com/davidB/tracing-opentelemetry-instrumentation-sdk>
+tracing = "0.1"
+axum-tracing-opentelemetry = "0.23.0"
+opentelemetry = { version = "0.26.0", features = ["metrics", "logs"] }
+opentelemetry_sdk = { version = "0.26.0", features = ["rt-tokio", "logs"] }
+opentelemetry-stdout = { version = "0.26.0" }
+opentelemetry-otlp = { version = "0.26.0", features = [
+  "tonic",
+  "metrics",
+  "logs",
+] }
+opentelemetry-semantic-conventions = { version = "0.26.0" }
+opentelemetry-appender-tracing = { version = "0.26.0", default-features = false }
+tracing-core = { version = "0.1.32", default-features = false }
+tracing-subscriber = { version = "0.3.18", features = [
+  "env-filter",
+  "registry",
+  "std",
+] }
+tracing-opentelemetry = "0.27.0"
