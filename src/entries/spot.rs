@@ -1,8 +1,7 @@
-use serde::{Deserialize, Serialize};
-
 use crate::entries::{base::BaseEntry, EntryTrait};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub struct SpotEntry {
     pub base: BaseEntry,
     pub pair_id: String,

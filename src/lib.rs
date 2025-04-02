@@ -6,3 +6,9 @@ pub mod entries;
 pub mod telemetry;
 // Pair
 pub mod pair;
+
+// Pragma Aggregations
+pub mod aggregation;
+
+// Pragma Time Intervals
+pub mod interval;
