@@ -1,7 +1,5 @@
 use std::str::FromStr;
 
-use serde::{Deserialize, Serialize};
-
 const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 
 /// A pair of assets, e.g. BTC/USD
@@ -9,7 +7,8 @@ const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 /// This is a simple struct that holds the base and quote assets.
 /// It is used to represent a pair of assets in the system.
 /// Base and quote are always in UPPERCASE.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub struct Pair {
     pub base: String,
     pub quote: String,

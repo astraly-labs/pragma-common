@@ -1,6 +1,5 @@
-use serde::{Serialize, Deserialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub struct BaseEntry {
     pub timestamp: u64,
     pub source: String,

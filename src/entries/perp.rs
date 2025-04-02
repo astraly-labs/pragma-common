@@ -1,8 +1,7 @@
-use serde::{Serialize, Deserialize};
+use crate::entries::{base::BaseEntry, EntryTrait};
 
-use crate::entries::{EntryTrait, base::BaseEntry};
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub struct PerpEntry {
     pub base: BaseEntry,
     pub pair_id: String,

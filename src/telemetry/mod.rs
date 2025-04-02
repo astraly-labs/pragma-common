@@ -1,23 +1,23 @@
 use anyhow::Result;
 use opentelemetry::trace::TracerProvider;
-use opentelemetry::{KeyValue, global};
+use opentelemetry::{global, KeyValue};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::logs::{BatchConfig, LoggerProvider};
 use opentelemetry_sdk::metrics::reader::DefaultTemporalitySelector;
 use opentelemetry_sdk::metrics::{MeterProviderBuilder, PeriodicReader};
-use opentelemetry_sdk::{
-    Resource,
-    trace::{Config, Tracer},
-};
 use opentelemetry_sdk::{runtime, trace::BatchConfigBuilder};
+use opentelemetry_sdk::{
+    trace::{Config, Tracer},
+    Resource,
+};
 use opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 use tracing::level_filters::LevelFilter;
 use tracing_opentelemetry::OpenTelemetryLayer;
-use tracing_subscriber::EnvFilter;
 use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::EnvFilter;
 
 pub fn init_telemetry(app_name: String, collection_endpoint: Option<String>) -> Result<()> {
     let tracing_subscriber = tracing_subscriber::registry().with(

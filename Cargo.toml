@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -10,9 +10,20 @@ keywords = ["pragma", "common", "utils"]
 repository = "https://github.com/astraly-labs/pragma-common"
 license = "MIT"
 
+[features]
+serde = ["dep:serde"]
+utoipa = ["dep:utoipa"]
+
 [dependencies]
 anyhow = { version = "1" }
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+# feature[UTOIPA]
+utoipa = { version = "5.0.0", features = [
+  "axum_extras",
+  "chrono",
+  "uuid",
+], optional = true }
 
 # Open telemtry related crates. There is a lot of inter-dependency
 # because of the current state of OTEL in rust.

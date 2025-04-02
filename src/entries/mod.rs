@@ -4,8 +4,6 @@ pub mod future;
 pub mod perp;
 pub mod spot;
 
-use serde::{Serialize, Deserialize};
-
 pub trait EntryTrait {
     fn base(&self) -> &base::BaseEntry;
     fn pair_id(&self) -> &String;
@@ -14,14 +12,15 @@ pub trait EntryTrait {
     fn expiration_timestamp_ms(&self) -> Option<u64>;
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(tag = "type", content = "data")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
+#[cfg_attr(feature = "serde", serde(tag = "type", content = "data"))]
 pub enum MarketEntry {
-    #[serde(rename = "spot")]
+    #[cfg_attr(feature = "serde", serde(rename = "spot"))]
     Spot(spot::SpotEntry),
-    #[serde(rename = "perp")]
+    #[cfg_attr(feature = "serde", serde(rename = "perp"))]
     Perp(perp::PerpEntry),
-    #[serde(rename = "future")]
+    #[cfg_attr(feature = "serde", serde(rename = "future"))]
     Future(future::FutureEntry),
 }
 
@@ -72,7 +71,7 @@ impl std::fmt::Display for MarketEntry {
         match self {
             Self::Spot(entry) => write!(f, "spot: {entry}"),
             Self::Perp(entry) => write!(f, "perp: {entry}"),
-            Self::Future(entry) => write!(f, "perp: {entry}"),
+            Self::Future(entry) => write!(f, "future: {entry}"),
         }
     }
 }
