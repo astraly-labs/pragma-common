@@ -1,5 +1,6 @@
 use crate::{instrument::Instrument, pair::Pair};
 
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub struct OrderbookUpdate {
     pub source: String,

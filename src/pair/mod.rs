@@ -7,7 +7,7 @@ const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 /// This is a simple struct that holds the base and quote assets.
 /// It is used to represent a pair of assets in the system.
 /// Base and quote are always in UPPERCASE.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub struct Pair {
     pub base: String,
