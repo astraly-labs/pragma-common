@@ -8,3 +8,12 @@ pub enum AggregationMode {
     #[default]
     Twap,
 }
+
+impl AggregationMode {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Median => "median",
+            Self::Twap => "twap",
+        }
+    }
+}

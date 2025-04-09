@@ -1,4 +1,3 @@
-use anyhow::Result;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::{global, KeyValue};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
@@ -19,7 +18,22 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
 
-pub fn init_telemetry(app_name: String, collection_endpoint: Option<String>) -> Result<()> {
+#[derive(thiserror::Error, Debug)]
+pub enum TelemetryError {
+    #[error("trace error: {0}")]
+    TraceError(#[from] opentelemetry::trace::TraceError),
+    #[error("try init error: {0}")]
+    TryInitError(#[from] tracing_subscriber::util::TryInitError),
+    #[error("metrics error: {0}")]
+    MetricsError(#[from] opentelemetry::metrics::MetricsError),
+    #[error("log error: {0}")]
+    LogError(#[from] opentelemetry::logs::LogError),
+}
+
+pub fn init_telemetry(
+    app_name: String,
+    collection_endpoint: Option<String>,
+) -> Result<(), TelemetryError> {
     let tracing_subscriber = tracing_subscriber::registry().with(
         EnvFilter::builder()
             .with_default_directive(LevelFilter::INFO.into())
@@ -77,7 +91,10 @@ fn init_tracer_provider(app_name: &str, collection_endpoint: &str) -> Tracer {
     provider.tracer(format!("{app_name}-subscriber"))
 }
 
-fn init_logs_provider(app_name: &str, collection_endpoint: &str) -> Result<LoggerProvider> {
+fn init_logs_provider(
+    app_name: &str,
+    collection_endpoint: &str,
+) -> Result<LoggerProvider, TelemetryError> {
     let logger = opentelemetry_otlp::new_pipeline()
         .logging()
         .with_batch_config(BatchConfig::default())
@@ -95,7 +112,10 @@ fn init_logs_provider(app_name: &str, collection_endpoint: &str) -> Result<Logge
     Ok(logger)
 }
 
-pub fn init_meter_provider(app_name: &str, collection_endpoint: &str) -> Result<()> {
+pub fn init_meter_provider(
+    app_name: &str,
+    collection_endpoint: &str,
+) -> Result<(), TelemetryError> {
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
         .with_endpoint(collection_endpoint)

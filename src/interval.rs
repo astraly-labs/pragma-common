@@ -31,6 +31,22 @@ pub enum Interval {
 }
 
 impl Interval {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::OneHundredMillisecond => "100ms",
+            Self::OneSecond => "1s",
+            Self::FiveSeconds => "5s",
+            Self::TenSeconds => "10s",
+            Self::OneMinute => "1min",
+            Self::FiveMinutes => "5min",
+            Self::FifteenMinutes => "15min",
+            Self::OneHour => "1h",
+            Self::TwoHours => "2h",
+            Self::OneDay => "1d",
+            Self::OneWeek => "1w",
+        }
+    }
+
     pub const fn to_minutes(&self) -> i64 {
         match self {
             Self::OneHundredMillisecond

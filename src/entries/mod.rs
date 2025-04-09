@@ -1,6 +1,5 @@
 pub mod base;
 
-pub mod future;
 pub mod perp;
 pub mod spot;
 
@@ -20,8 +19,6 @@ pub enum MarketEntry {
     Spot(spot::SpotEntry),
     #[cfg_attr(feature = "serde", serde(rename = "perp"))]
     Perp(perp::PerpEntry),
-    #[cfg_attr(feature = "serde", serde(rename = "future"))]
-    Future(future::FutureEntry),
 }
 
 impl EntryTrait for MarketEntry {
@@ -29,7 +26,6 @@ impl EntryTrait for MarketEntry {
         match self {
             Self::Spot(entry) => entry.base(),
             Self::Perp(entry) => entry.base(),
-            Self::Future(entry) => entry.base(),
         }
     }
 
@@ -37,7 +33,6 @@ impl EntryTrait for MarketEntry {
         match self {
             Self::Spot(entry) => entry.pair_id(),
             Self::Perp(entry) => entry.pair_id(),
-            Self::Future(entry) => entry.pair_id(),
         }
     }
 
@@ -45,7 +40,6 @@ impl EntryTrait for MarketEntry {
         match self {
             Self::Spot(entry) => entry.price(),
             Self::Perp(entry) => entry.price(),
-            Self::Future(entry) => entry.price(),
         }
     }
 
@@ -53,7 +47,6 @@ impl EntryTrait for MarketEntry {
         match self {
             Self::Spot(entry) => entry.volume(),
             Self::Perp(entry) => entry.volume(),
-            Self::Future(entry) => entry.volume(),
         }
     }
 
@@ -61,7 +54,6 @@ impl EntryTrait for MarketEntry {
         match self {
             Self::Spot(entry) => entry.expiration_timestamp_ms(),
             Self::Perp(entry) => entry.expiration_timestamp_ms(),
-            Self::Future(entry) => entry.expiration_timestamp_ms(),
         }
     }
 }
@@ -71,7 +63,6 @@ impl std::fmt::Display for MarketEntry {
         match self {
             Self::Spot(entry) => write!(f, "spot: {entry}"),
             Self::Perp(entry) => write!(f, "perp: {entry}"),
-            Self::Future(entry) => write!(f, "future: {entry}"),
         }
     }
 }
