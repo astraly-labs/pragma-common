@@ -1,10 +1,14 @@
-use crate::entries::{base::BaseEntry, EntryTrait};
+use crate::{
+    entries::{base::BaseEntry, EntryTrait},
+    instrument::Instrument,
+    pair::Pair,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub struct PerpEntry {
     pub base: BaseEntry,
-    pub pair_id: String,
+    pub pair: Pair,
     pub price: u128,
     pub volume: u128,
 }
@@ -14,8 +18,8 @@ impl EntryTrait for PerpEntry {
         &self.base
     }
 
-    fn pair_id(&self) -> &String {
-        &self.pair_id
+    fn pair(&self) -> &Pair {
+        &self.pair
     }
 
     fn price(&self) -> u128 {
@@ -29,6 +33,10 @@ impl EntryTrait for PerpEntry {
     fn expiration_timestamp_ms(&self) -> Option<u64> {
         Some(0)
     }
+
+    fn instrument(&self) -> Instrument {
+        Instrument::Perp
+    }
 }
 
 impl std::fmt::Display for PerpEntry {
@@ -36,7 +44,7 @@ impl std::fmt::Display for PerpEntry {
         write!(
             f,
             "PERP[{}] {} @ {} (vol: {}) from {}/{}",
-            self.pair_id,
+            self.pair,
             self.price,
             self.base.timestamp,
             self.volume,
