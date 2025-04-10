@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -13,6 +13,16 @@ license = "MIT"
 [features]
 serde = ["dep:serde"]
 utoipa = ["dep:utoipa"]
+telemetry = [
+  "dep:tracing",
+  "dep:opentelemetry",
+  "dep:opentelemetry_sdk",
+  "dep:opentelemetry-otlp",
+  "dep:opentelemetry-semantic-conventions",
+  "dep:opentelemetry-appender-tracing",
+  "dep:tracing-subscriber",
+  "dep:tracing-opentelemetry",
+]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"], optional = true }
@@ -30,22 +40,25 @@ utoipa = { version = "5.0.0", features = [
 # because of the current state of OTEL in rust.
 # We must be mindful in we update the version of one crate, see:
 # <https://github.com/davidB/tracing-opentelemetry-instrumentation-sdk>
-tracing = "0.1"
-axum-tracing-opentelemetry = "0.23.0"
-opentelemetry = { version = "0.26.0", features = ["metrics", "logs"] }
-opentelemetry_sdk = { version = "0.26.0", features = ["rt-tokio", "logs"] }
-opentelemetry-stdout = { version = "0.26.0" }
+tracing = { version = "0.1", optional = true }
+opentelemetry = { version = "0.26.0", features = [
+  "metrics",
+  "logs",
+], optional = true }
+opentelemetry_sdk = { version = "0.26.0", features = [
+  "rt-tokio",
+  "logs",
+], optional = true }
 opentelemetry-otlp = { version = "0.26.0", features = [
   "tonic",
   "metrics",
   "logs",
-] }
-opentelemetry-semantic-conventions = { version = "0.26.0" }
-opentelemetry-appender-tracing = { version = "0.26.0", default-features = false }
-tracing-core = { version = "0.1.32", default-features = false }
+], optional = true }
+opentelemetry-semantic-conventions = { version = "0.26.0", optional = true }
+opentelemetry-appender-tracing = { version = "0.26.0", default-features = false, optional = true }
 tracing-subscriber = { version = "0.3.18", features = [
   "env-filter",
   "registry",
   "std",
-] }
-tracing-opentelemetry = "0.27.0"
+], optional = true }
+tracing-opentelemetry = { version = "0.27.0", optional = true }

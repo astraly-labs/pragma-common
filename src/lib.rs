@@ -12,6 +12,7 @@ pub mod web3;
 pub mod orderbook;
 
 // Telemetry init through OTEL
+#[cfg(feature = "telemetry")]
 pub mod telemetry;
 
 // Pair

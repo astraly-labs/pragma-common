@@ -9,7 +9,7 @@ pub use update::*;
 
 use std::collections::BTreeMap;
 
-use bigdecimal::{BigDecimal, FromPrimitive, Zero};
+use bigdecimal::{BigDecimal, FromPrimitive, ToPrimitive, Zero};
 
 #[derive(Debug, thiserror::Error)]
 pub enum OrderbookError {
@@ -22,7 +22,7 @@ pub enum OrderbookError {
 /// A orderbook order book that handles updates and snapshots.
 ///
 /// This struct wraps the core `InnerOrderbook` and manages pending updates before a snapshot is applied.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Orderbook {
     /// The core order book with bids and asks
     orderbook: InnerOrderbook,
@@ -33,19 +33,17 @@ pub struct Orderbook {
 }
 
 impl Orderbook {
-    /// Creates a new, empty `Orderbook`.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Create a new orderbook with the given depth.
-    pub fn new_with_depth(depth: usize) -> Self {
+    pub fn new(depth: usize) -> Self {
         Self {
             orderbook: InnerOrderbook {
-                depth: Some(depth),
-                ..Default::default()
+                depth,
+                bids: BTreeMap::new(),
+                asks: BTreeMap::new(),
+                last_update_id: 0,
             },
-            ..Default::default()
+            snapshot_applied: false,
+            pending_updates: None,
         }
     }
 
@@ -77,6 +75,11 @@ impl Orderbook {
     /// Get the mid price (average of best bid and ask).
     pub fn mid_price(&self) -> Option<BigDecimal> {
         self.orderbook.mid_price()
+    }
+
+    /// Compute depth at a given percentage.
+    pub fn depth(&self, percentage: f64) -> Option<DepthLevel> {
+        self.orderbook.depth(percentage)
     }
 
     /// Applies an update to the order book.
@@ -265,12 +268,12 @@ impl OrderbookUpdate {
 }
 
 /// The core order book structure.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 struct InnerOrderbook {
+    depth: usize,                    // Max depth level of the orderbook
     bids: BTreeMap<BigDecimal, f64>, // price -> quantity
     asks: BTreeMap<BigDecimal, f64>, // price -> quantity
     last_update_id: u64,
-    depth: Option<usize>, // Subscribed depth, None means no truncation
 }
 
 impl InnerOrderbook {
@@ -351,19 +354,31 @@ impl InnerOrderbook {
         }
     }
 
-    /// Some fetchers (hello Kraken) forces us to manually remove stale data
-    /// from the orderbook if we're subscribed to a level `N`.
-    /// See:
-    /// <https://docs.kraken.com/api/docs/guides/spot-ws-book-v2>
-    fn truncate_to_depth(&mut self) {
-        if let Some(depth) = self.depth {
-            while self.bids.len() > depth {
-                self.bids.pop_first();
-            }
+    fn depth(&self, percentage: f64) -> Option<DepthLevel> {
+        let mid = self.mid_price()?;
+        let mid_price = mid.to_f64()?;
 
-            while self.asks.len() > depth {
-                self.asks.pop_last();
-            }
+        let percentage_bd = BigDecimal::from_f64(percentage)?;
+        let lower = &mid * (BigDecimal::from(1) - &percentage_bd);
+        let upper = &mid * (BigDecimal::from(1) + &percentage_bd);
+
+        let bid_depth: f64 = self.bids.range(&lower..=&mid).map(|(_, &qty)| qty).sum();
+        let ask_depth: f64 = self.asks.range(&mid..=&upper).map(|(_, &qty)| qty).sum();
+
+        Some(DepthLevel {
+            bid: bid_depth * mid_price,
+            ask: ask_depth * mid_price,
+            percentage,
+        })
+    }
+
+    fn truncate_to_depth(&mut self) {
+        while self.bids.len() > self.depth {
+            self.bids.pop_first();
+        }
+
+        while self.asks.len() > self.depth {
+            self.asks.pop_last();
         }
     }
 }
@@ -375,7 +390,7 @@ mod tests {
 
     #[test]
     fn test_new_orderbook() {
-        let ob = Orderbook::new();
+        let ob = Orderbook::new(10);
         assert_eq!(ob.last_update_id(), 0);
         assert!(!ob.snapshot_was_applied());
         assert!(ob.pending_updates.is_none());
@@ -384,7 +399,7 @@ mod tests {
 
     #[test]
     fn test_apply_update_before_snapshot() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_update(vec![(100.0, 10.0), (99.0, 5.0)], vec![(101.0, 15.0)], 1)
             .unwrap();
 
@@ -400,7 +415,7 @@ mod tests {
 
     #[test]
     fn test_merge_updates_before_snapshot() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_update(vec![(100.0, 10.0)], vec![(101.0, 15.0)], 1)
             .unwrap();
         ob.apply_update(
@@ -420,7 +435,7 @@ mod tests {
 
     #[test]
     fn test_apply_snapshot_no_pending() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_snapshot(vec![(100.0, 10.0), (99.0, 5.0)], vec![(101.0, 15.0)], 5)
             .unwrap();
 
@@ -435,7 +450,7 @@ mod tests {
 
     #[test]
     fn test_apply_snapshot_with_pending() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_update(vec![(100.0, 10.0)], vec![(102.0, 20.0)], 1)
             .unwrap();
         ob.apply_update(vec![(99.0, 5.0)], vec![(103.0, 15.0)], 3)
@@ -453,7 +468,7 @@ mod tests {
 
     #[test]
     fn test_update_after_snapshot() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_snapshot(vec![(100.0, 10.0)], vec![(101.0, 15.0)], 5)
             .unwrap();
         ob.apply_update(vec![(100.0, 0.0), (99.0, 5.0)], vec![(102.0, 20.0)], 6)
@@ -468,7 +483,7 @@ mod tests {
 
     #[test]
     fn test_old_update_after_snapshot() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_snapshot(vec![(100.0, 10.0)], vec![(101.0, 15.0)], 5)
             .unwrap();
         ob.apply_update(vec![(100.0, 5.0)], vec![(101.0, 10.0)], 4)
@@ -481,7 +496,7 @@ mod tests {
 
     #[test]
     fn test_invalid_price() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         let result = ob.apply_update(vec![(f64::NAN, 10.0)], vec![(101.0, 15.0)], 1);
         assert!(result.is_err());
     }
@@ -489,7 +504,7 @@ mod tests {
     #[test]
     #[allow(clippy::float_cmp)]
     fn test_mid_price_and_depth() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_snapshot(
             vec![(99.0, 5.0), (100.0, 10.0)],
             vec![(101.0, 15.0), (102.0, 20.0)],
@@ -503,7 +518,7 @@ mod tests {
 
     #[test]
     fn test_zero_quantity_in_snapshot() {
-        let mut ob = Orderbook::new();
+        let mut ob = Orderbook::new(10);
         ob.apply_snapshot(vec![(100.0, 0.0), (99.0, 5.0)], vec![(101.0, 0.0)], 1)
             .unwrap();
 
