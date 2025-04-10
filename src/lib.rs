@@ -2,8 +2,8 @@
 
 // Entries, i.e Spot/Perp/Future
 pub mod entries;
-pub mod instrument;
-pub use instrument::Instrument;
+pub mod instrument_type;
+pub use instrument_type::InstrumentType;
 
 // Web3 types
 pub mod web3;

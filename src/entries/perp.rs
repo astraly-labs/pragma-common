@@ -1,6 +1,6 @@
 use crate::{
     entries::{base::BaseEntry, EntryTrait},
-    instrument::Instrument,
+    instrument_type::InstrumentType,
     pair::Pair,
 };
 
@@ -34,8 +34,8 @@ impl EntryTrait for PerpEntry {
         Some(0)
     }
 
-    fn instrument(&self) -> Instrument {
-        Instrument::Perp
+    fn instrument_type(&self) -> InstrumentType {
+        InstrumentType::Perp
     }
 }
 

@@ -6,7 +6,7 @@ pub use base::*;
 pub use perp::*;
 pub use spot::*;
 
-use crate::{instrument::Instrument, pair::Pair};
+use crate::{instrument_type::InstrumentType, pair::Pair};
 
 pub trait EntryTrait {
     fn base(&self) -> &base::BaseEntry;
@@ -14,7 +14,7 @@ pub trait EntryTrait {
     fn price(&self) -> u128;
     fn volume(&self) -> u128;
     fn expiration_timestamp_ms(&self) -> Option<u64>;
-    fn instrument(&self) -> Instrument;
+    fn instrument_type(&self) -> InstrumentType;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -28,10 +28,10 @@ pub enum MarketEntry {
 }
 
 impl EntryTrait for MarketEntry {
-    fn instrument(&self) -> Instrument {
+    fn instrument_type(&self) -> InstrumentType {
         match self {
-            Self::Spot(entry) => entry.instrument(),
-            Self::Perp(entry) => entry.instrument(),
+            Self::Spot(entry) => entry.instrument_type(),
+            Self::Perp(entry) => entry.instrument_type(),
         }
     }
 
@@ -80,8 +80,8 @@ impl std::fmt::Display for MarketEntry {
     }
 }
 
-impl From<MarketEntry> for Instrument {
+impl From<MarketEntry> for InstrumentType {
     fn from(value: MarketEntry) -> Self {
-        value.instrument()
+        value.instrument_type()
     }
 }

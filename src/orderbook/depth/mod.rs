@@ -1,4 +1,4 @@
-use crate::{web3::Chain, Instrument, Pair};
+use crate::{web3::Chain, InstrumentType, Pair};
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -7,7 +7,7 @@ pub struct Depth {
     pub pair: Pair,
     pub source: String,
     pub chain: Option<Chain>,
-    pub instrument: Instrument,
+    pub instrument_type: InstrumentType,
 }
 
 #[derive(Debug, Clone, PartialEq)]
