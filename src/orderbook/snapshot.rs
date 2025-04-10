@@ -16,8 +16,8 @@ pub struct OrderbookSnapshot {
 }
 
 #[cfg(feature = "capnp")]
-impl OrderbookSnapshot {
-    pub fn to_capnp(&self) -> Vec<u8> {
+impl crate::schema_capnp::CapnpSerialize for OrderbookSnapshot {
+    fn to_capnp(&self) -> Vec<u8> {
         let mut message = capnp::message::Builder::new_default();
         let mut builder = message.init_root::<orderbook_snapshot::Builder>();
 
@@ -51,8 +51,14 @@ impl OrderbookSnapshot {
         serialize::write_message(&mut buffer, &message).unwrap();
         buffer
     }
+}
 
-    pub fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error> {
+#[cfg(feature = "capnp")]
+impl crate::schema_capnp::CapnpDeserialize for OrderbookSnapshot {
+    fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
+    where
+        Self: Sized,
+    {
         let message_reader = serialize::read_message(bytes, capnp::message::ReaderOptions::new())?;
         let reader = message_reader.get_root::<orderbook_snapshot::Reader>()?;
 

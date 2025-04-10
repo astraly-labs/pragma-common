@@ -91,8 +91,8 @@ impl From<MarketEntry> for InstrumentType {
 }
 
 #[cfg(feature = "capnp")]
-impl MarketEntry {
-    pub fn to_capnp(&self) -> Vec<u8> {
+impl crate::schema_capnp::CapnpSerialize for MarketEntry {
+    fn to_capnp(&self) -> Vec<u8> {
         let mut message = capnp::message::Builder::new_default();
         let mut builder = message.init_root::<market_entry::Builder>();
 
@@ -133,8 +133,14 @@ impl MarketEntry {
         serialize::write_message(&mut buffer, &message).unwrap();
         buffer
     }
+}
 
-    pub fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error> {
+#[cfg(feature = "capnp")]
+impl crate::schema_capnp::CapnpDeserialize for MarketEntry {
+    fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
+    where
+        Self: Sized,
+    {
         // Read the byte payload into a Cap'n Proto message reader
         let message_reader = serialize::read_message(bytes, capnp::message::ReaderOptions::new())?;
         let reader = message_reader.get_root::<market_entry::Reader>()?;

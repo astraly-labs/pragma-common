@@ -2,6 +2,7 @@
 use pragma_common::{
     entries::{BaseEntry, MarketEntry, SpotEntry},
     orderbook::{Depth, DepthLevel, OrderbookSnapshot, OrderbookUpdate},
+    schema_capnp::{CapnpDeserialize, CapnpSerialize},
     web3::Chain,
     InstrumentType, Pair,
 };
