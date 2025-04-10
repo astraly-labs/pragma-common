@@ -1,5 +1,11 @@
+pub mod depth;
 pub mod snapshot;
 pub mod update;
+
+pub use depth::*;
+pub use snapshot::*;
+#[allow(unused)]
+pub use update::*;
 
 use std::collections::BTreeMap;
 

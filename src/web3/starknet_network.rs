@@ -1,13 +1,13 @@
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
-pub enum Network {
+pub enum StarknetNetwork {
     #[cfg_attr(feature = "serde", serde(rename = "sepolia"))]
     Sepolia,
     #[cfg_attr(feature = "serde", serde(rename = "mainnet"))]
     Mainnet,
 }
 
-impl Network {
+impl StarknetNetwork {
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Sepolia => "sepolia",
@@ -16,7 +16,7 @@ impl Network {
     }
 }
 
-impl Default for Network {
+impl Default for StarknetNetwork {
     fn default() -> Self {
         Self::Mainnet
     }

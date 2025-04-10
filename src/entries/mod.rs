@@ -1,9 +1,12 @@
-use crate::{instrument::Instrument, pair::Pair};
-
 pub mod base;
-
 pub mod perp;
 pub mod spot;
+
+pub use base::*;
+pub use perp::*;
+pub use spot::*;
+
+use crate::{instrument::Instrument, pair::Pair};
 
 pub trait EntryTrait {
     fn base(&self) -> &base::BaseEntry;
