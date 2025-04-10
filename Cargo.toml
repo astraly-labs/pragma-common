@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -12,6 +12,7 @@ license = "MIT"
 
 [features]
 serde = ["dep:serde"]
+capnp = ["dep:capnp"]
 utoipa = ["dep:utoipa"]
 telemetry = [
   "dep:tracing",
@@ -24,22 +25,27 @@ telemetry = [
   "dep:tracing-opentelemetry",
 ]
 
+[build-dependencies]
+capnpc = { version = "0.21.0" }
+
 [dependencies]
-serde = { version = "1.0", features = ["derive"], optional = true }
 bigdecimal = "0.4.8"
 thiserror = "2.0.12"
 
-# feature[UTOIPA]
+# feature[serde]
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+# feature[capnp]
+capnp = { version = "0.21.0", optional = true }
+
+# feature[utoipa]
 utoipa = { version = "5.0.0", features = [
   "axum_extras",
   "chrono",
   "uuid",
 ], optional = true }
 
-# Open telemtry related crates. There is a lot of inter-dependency
-# because of the current state of OTEL in rust.
-# We must be mindful in we update the version of one crate, see:
-# <https://github.com/davidB/tracing-opentelemetry-instrumentation-sdk>
+# feature[telemtry]
 tracing = { version = "0.1", optional = true }
 opentelemetry = { version = "0.26.0", features = [
   "metrics",

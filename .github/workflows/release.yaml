@@ -3,7 +3,7 @@ name: "Release"
 on:
   push:
     tags:
-      - '*.*.*'
+      - "*.*.*"
 
 jobs:
   release-info:
@@ -104,6 +104,23 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v4
 
+      - name: Install Cap'n Proto (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y capnproto libcapnp-dev
+
+      - name: Install Cap'n Proto (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install capnp
+
+      - name: Install Cap'n Proto (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install -y capnproto
+        shell: powershell
+
       - name: "Install Rust stable toolchain"
         uses: dtolnay/rust-toolchain@stable
 
@@ -140,6 +157,11 @@ jobs:
 
       - name: "Install Rust stable toolchain"
         uses: dtolnay/rust-toolchain@stable
+
+      - name: "Install Cap'n Proto"
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get install -y capnproto libcapnp-dev
 
       - name: "Login to crates.io"
         run: cargo login $CRATES_IO_API_TOKEN
