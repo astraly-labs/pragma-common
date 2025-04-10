@@ -4,7 +4,6 @@ pub mod update;
 
 pub use depth::*;
 pub use snapshot::*;
-#[allow(unused)]
 pub use update::*;
 
 use std::collections::BTreeMap;
@@ -29,7 +28,7 @@ pub struct Orderbook {
     /// Tracks whether a snapshot has been applied
     snapshot_applied: bool,
     /// Pending updates before snapshot
-    pending_updates: Option<OrderbookUpdate>,
+    pending_updates: Option<PendingOrderbookUpdate>,
 }
 
 impl Orderbook {
@@ -114,7 +113,8 @@ impl Orderbook {
             if let Some(pending) = self.pending_updates.as_mut() {
                 pending.merge(bids_bd, asks_bd, update_id);
             } else {
-                self.pending_updates = Some(OrderbookUpdate::new(bids_bd, asks_bd, update_id));
+                self.pending_updates =
+                    Some(PendingOrderbookUpdate::new(bids_bd, asks_bd, update_id));
             }
         }
 
@@ -194,13 +194,13 @@ impl Orderbook {
 
 /// Represents a merged order book update with per-level update IDs.
 #[derive(Debug, Clone)]
-struct OrderbookUpdate {
+struct PendingOrderbookUpdate {
     bids: BTreeMap<BigDecimal, (f64, u64)>, // price -> (quantity, update_id)
     asks: BTreeMap<BigDecimal, (f64, u64)>, // price -> (quantity, update_id)
     latest_update_id: u64,
 }
 
-impl OrderbookUpdate {
+impl PendingOrderbookUpdate {
     /// Creates a new update from bids, asks, and an update ID.
     fn new(bids: Vec<(BigDecimal, f64)>, asks: Vec<(BigDecimal, f64)>, update_id: u64) -> Self {
         let mut bids_map = BTreeMap::new();

@@ -26,3 +26,9 @@ pub use aggregation::AggregationMode;
 // Pragma Time Intervals
 pub mod interval;
 pub use interval::Interval;
+
+// Capnp generated schema
+#[cfg(feature = "capnp")]
+pub mod schema_capnp {
+    include!("./generated/schema_capnp.rs");
+}
