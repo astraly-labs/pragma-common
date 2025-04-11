@@ -2,7 +2,7 @@
 name = "pragma-common"
 version = "0.1.14"
 edition = "2021"
-rust-version = "1.81"
+rust-version = "1.86"
 categories = ["finance", "api-bindings"]
 description = "Pragma Common types for Rust"
 authors = ["Pragma <support@pragma.build>"]
@@ -29,8 +29,15 @@ telemetry = [
 capnpc = { version = "0.21.0" }
 
 [dependencies]
+anyhow = "1.0.91"
 bigdecimal = "0.4.8"
 thiserror = "2.0.12"
+
+# services
+async-trait = "0.1"
+futures = "0.3"
+tokio = { version = "^1.43.0", features = ["rt", "macros", "time"]}
+tokio-util = "0.7.13"
 
 # feature[serde]
 serde = { version = "1.0", features = ["derive"], optional = true }
@@ -45,7 +52,7 @@ utoipa = { version = "5.0.0", features = [
   "uuid",
 ], optional = true }
 
-# feature[telemtry]
+# feature[telemetry]
 tracing = { version = "0.1", optional = true }
 opentelemetry = { version = "0.26.0", features = [
   "metrics",
