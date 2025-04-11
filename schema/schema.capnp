@@ -1,4 +1,4 @@
-@0x986b3393db1396c9;  # Unique file ID
+@0xf77e83e1f4aad73b;
 
 # Utils types
 struct UInt128 {
@@ -29,19 +29,17 @@ enum Chain {
   worldchain @13;
 }
 
+enum OrderbookUpdateType {
+  update @0;
+  snapshot @1;
+}
+
 # Structs for custom types
 struct Pair {
   base @0 :Text;
   quote @1 :Text;
 }
 
-struct BaseEntry {
-  timestamp @0 :Int64;
-  source @1 :Text;
-  publisher @2 :Text;
-}
-
-# Same structure for bid & ask, basically just a price & a quantity
 struct BidOrAsk {
   price @0 :Float64;
   quantity @1 :Float64;
@@ -53,44 +51,45 @@ struct DepthLevel {
   ask @2 :Float64;
 }
 
+struct OrderbookData {
+  updateId @0 :UInt64;
+  bids @1 :List(BidOrAsk);
+  asks @2 :List(BidOrAsk);
+}
+
 # Main structs
-struct MarketEntry {
-  base @0 :BaseEntry;
-  pair @1 :Pair;
-  price @2 :UInt128;
-  volume @3 :UInt128;
-  instrumentType @4 :InstrumentType;
-  union {
-    noExpiration @5 :Void;         # Represents Option<u64>
-    expirationTimestampMs @6 :UInt64;
+struct PriceEntry {
+  source @0 :Text;
+  chain: union {
+    noChain @1 :Void;
+    chain @2 :Chain;
+  }
+  pair @3 :Pair;
+  publisher @4 :Text;
+  timestamp @5 :Int64;
+  price @6 :UInt128;
+  volume @7 :UInt128;
+  expirationTimestamp :union {
+    noExpiration @8 :Void;
+    expirationTimestamp @9 :Int64;
   }
 }
 
-struct OrderbookSnapshot {
+struct OrderbookEntry {
   source @0 :Text;
   instrumentType @1 :InstrumentType;
   pair @2 :Pair;
-  lastUpdateId @3 :UInt64;
-  bids @4 :List(BidOrAsk);
-  asks @5 :List(BidOrAsk);
+  type @3 :OrderbookUpdateType;
+  data @4 :OrderbookData;
 }
 
-struct OrderbookUpdate {
+struct DepthEntry {
   source @0 :Text;
   instrumentType @1 :InstrumentType;
   pair @2 :Pair;
-  lastUpdateId @3 :UInt64;
-  bids @4 :List(BidOrAsk);
-  asks @5 :List(BidOrAsk);
-}
-
-struct Depth {
-  depth @0 :DepthLevel;
-  pair @1 :Pair;
-  source @2 :Text;
-  instrumentType @3 :InstrumentType;
-  union {
-    noChain @4 :Void;    # Represents Option<Chain>
+  depth @3 :DepthLevel;
+  chain: union {
+    noChain @4 :Void;
     chain @5 :Chain;
   }
 }

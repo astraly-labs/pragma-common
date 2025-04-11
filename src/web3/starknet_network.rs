@@ -1,5 +1,6 @@
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum StarknetNetwork {
     #[cfg_attr(feature = "serde", serde(rename = "sepolia"))]
     Sepolia,

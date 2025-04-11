@@ -1,14 +1,8 @@
-pub mod depth;
-pub mod snapshot;
-pub mod update;
-
-pub use depth::*;
-pub use snapshot::*;
-pub use update::*;
-
 use std::collections::BTreeMap;
 
 use bigdecimal::{BigDecimal, FromPrimitive, ToPrimitive, Zero};
+
+use crate::entries::depth::DepthLevel;
 
 #[derive(Debug, thiserror::Error)]
 pub enum OrderbookError {
