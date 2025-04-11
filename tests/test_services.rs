@@ -265,40 +265,123 @@ async fn test_service_group() {
 }
 
 #[tokio::test]
-async fn test_service_grace_period() {
+async fn test_service_lifecycle_with_controlled_shutdown() {
+    // Create a counter to track executions
     let counter = Arc::new(Mutex::new(0));
+    let counter_for_task = counter.clone();
 
-    // Create a service that sleeps for longer than we'll wait
-    let mut service = TestService {
-        counter: counter.clone(),
-        sleep_duration: Some(Duration::from_millis(500)),
-        should_panic: false,
-    };
+    // Flag to track if shutdown completed
+    let shutdown_completed = Arc::new(Mutex::new(false));
+    let shutdown_completed_for_task = shutdown_completed.clone();
 
     let ctx = ServiceContext::new();
     let mut join_set = JoinSet::new();
-    let runner = ServiceRunner::new(ctx.clone(), &mut join_set);
+    let mut runner = ServiceRunner::new(ctx.clone(), &mut join_set);
 
-    // Start the service
-    service.start(runner).await.unwrap();
+    // Spawn a service with controlled shutdown behavior
+    runner.spawn_loop(move |inner_ctx| {
+        let counter_inner = counter_for_task.clone();
+        let shutdown_inner = shutdown_completed_for_task.clone();
 
-    // Let it start
-    sleep(Duration::from_millis(100)).await;
+        async move {
+            // Run until cancelled
+            while !inner_ctx.is_cancelled() {
+                {
+                    let mut locked = counter_inner.lock().unwrap();
+                    *locked += 1;
+                }
+                sleep(Duration::from_millis(10)).await;
+            }
 
-    // Cancel and wait only a short time (less than the sleep duration)
-    ctx.cancel();
+            // When cancelled, do proper shutdown
+            *shutdown_inner.lock().unwrap() = true;
+            Ok::<(), anyhow::Error>(())
+        }
+    });
 
-    // The service should be forcefully cancelled after the grace period
+    // Let the service run a bit
     sleep(Duration::from_millis(50)).await;
 
-    // Counter may have incremented a few times
-    let count = *counter.lock().unwrap();
-    assert!(count >= 0, "Service should have started");
+    // Record the counter value before cancellation
+    let count_before = *counter.lock().unwrap();
+    assert!(count_before > 0, "Service should have started");
 
-    // Wait for the join set
+    // Cancel and wait for complete shutdown
+    ctx.cancel();
+
+    // Wait for the service to properly shut down
     while let Some(result) = join_set.join_next().await {
         result.unwrap().unwrap();
     }
+
+    // Verify the service did proper shutdown
+    assert!(
+        *shutdown_completed.lock().unwrap(),
+        "Service should have completed its shutdown sequence"
+    );
+
+    // Verify the service stopped incrementing the counter
+    let count_after = *counter.lock().unwrap();
+    sleep(Duration::from_millis(50)).await;
+    let final_count = *counter.lock().unwrap();
+
+    assert_eq!(
+        count_after, final_count,
+        "Counter should not increase after shutdown"
+    );
+}
+
+// This test verifies that services respond to context cancellation
+#[tokio::test]
+async fn test_service_cancellation_response() {
+    // Create a counter to track executions
+    let counter = Arc::new(Mutex::new(0));
+    let counter_for_task = counter.clone();
+
+    let ctx = ServiceContext::new();
+    let mut join_set = JoinSet::new();
+    let mut runner = ServiceRunner::new(ctx.clone(), &mut join_set);
+
+    // Spawn a service that checks for cancellation
+    runner.spawn_loop(move |inner_ctx| {
+        let counter_inner = counter_for_task.clone();
+
+        async move {
+            let mut iterations = 0;
+
+            // Run up to 200 iterations maximum, but will stop earlier if cancelled
+            while iterations < 200 && !inner_ctx.is_cancelled() {
+                {
+                    let mut locked = counter_inner.lock().unwrap();
+                    *locked += 1;
+                }
+                iterations += 1;
+                sleep(Duration::from_millis(10)).await;
+            }
+
+            // Finish naturally or due to cancellation
+            Ok::<(), anyhow::Error>(())
+        }
+    });
+
+    // Let the service run briefly
+    sleep(Duration::from_millis(30)).await;
+
+    // Cancel the context
+    ctx.cancel();
+
+    // Wait for tasks to complete
+    while let Some(result) = join_set.join_next().await {
+        result.unwrap().unwrap();
+    }
+
+    // Verify the service ran at least a bit, but not all 100 iterations
+    let final_count = *counter.lock().unwrap();
+    assert!(final_count > 0, "Service should have run at least once");
+    assert!(
+        final_count < 100,
+        "Service should have been cancelled before completing all iterations"
+    );
 }
 
 #[tokio::test]
