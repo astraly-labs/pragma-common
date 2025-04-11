@@ -1,8 +1,8 @@
 [package]
 name = "pragma-common"
-version = "0.1.14"
+version = "0.1.15"
 edition = "2021"
-rust-version = "1.86"
+rust-version = "1.79"
 categories = ["finance", "api-bindings"]
 description = "Pragma Common types for Rust"
 authors = ["Pragma <support@pragma.build>"]
@@ -24,6 +24,7 @@ telemetry = [
   "dep:tracing-subscriber",
   "dep:tracing-opentelemetry",
 ]
+services = ["dep:async-trait", "dep:futures", "dep:tokio", "dep:tokio-util"]
 
 [build-dependencies]
 capnpc = { version = "0.21.0" }
@@ -34,10 +35,10 @@ bigdecimal = "0.4.8"
 thiserror = "2.0.12"
 
 # services
-async-trait = "0.1"
-futures = "0.3"
-tokio = { version = "^1.43.0", features = ["rt", "macros", "time"]}
-tokio-util = "0.7.13"
+async-trait = { version = "0.1", optional = true }
+futures = { version = "0.3", optional = true }
+tokio = { version = "1", features = ["rt", "macros", "time"], optional = true }
+tokio-util = { version = "0.7", optional = true }
 
 # feature[serde]
 serde = { version = "1.0", features = ["derive"], optional = true }

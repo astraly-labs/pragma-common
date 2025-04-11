@@ -27,6 +27,7 @@ pub mod aggregation;
 pub use aggregation::AggregationMode;
 
 // An util to manage multiple tasks gracefully
+#[cfg(feature = "services")]
 pub mod services;
 
 // Pragma Time Intervals

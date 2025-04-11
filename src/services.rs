@@ -81,7 +81,7 @@ pub struct ServiceRunner<'a> {
 }
 
 impl<'a> ServiceRunner<'a> {
-    pub const fn new(ctx: ServiceContext, join_set: &'a mut JoinSet<anyhow::Result<()>>) -> Self {
+    pub fn new(ctx: ServiceContext, join_set: &'a mut JoinSet<anyhow::Result<()>>) -> Self {
         Self { ctx, join_set }
     }
 
