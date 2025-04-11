@@ -24,7 +24,7 @@ pub struct DepthLevel {
 }
 
 #[cfg(feature = "capnp")]
-impl crate::schema_capnp::CapnpSerialize for DepthEntry {
+impl crate::CapnpSerialize for DepthEntry {
     fn to_capnp(&self) -> Vec<u8> {
         let mut message = capnp::message::Builder::new_default();
         let mut builder = message.init_root::<schema_capnp::depth_entry::Builder>();
@@ -77,7 +77,7 @@ impl crate::schema_capnp::CapnpSerialize for DepthEntry {
 }
 
 #[cfg(feature = "capnp")]
-impl crate::schema_capnp::CapnpDeserialize for DepthEntry {
+impl crate::CapnpDeserialize for DepthEntry {
     fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
     where
         Self: Sized,

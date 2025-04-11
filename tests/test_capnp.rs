@@ -4,9 +4,8 @@ use pragma_common::{
     entries::orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType},
     entries::price::PriceEntry,
     instrument_type::InstrumentType,
-    schema_capnp::{CapnpDeserialize, CapnpSerialize},
     web3::Chain,
-    Pair,
+    CapnpDeserialize, CapnpSerialize, Pair,
 };
 
 #[cfg(feature = "capnp")]

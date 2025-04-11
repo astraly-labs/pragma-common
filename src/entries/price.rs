@@ -29,7 +29,7 @@ impl PriceEntry {
 }
 
 #[cfg(feature = "capnp")]
-impl crate::schema_capnp::CapnpSerialize for PriceEntry {
+impl crate::CapnpSerialize for PriceEntry {
     fn to_capnp(&self) -> Vec<u8> {
         let mut message = capnp::message::Builder::new_default();
         let mut builder = message.init_root::<schema_capnp::price_entry::Builder>();
@@ -102,7 +102,7 @@ impl crate::schema_capnp::CapnpSerialize for PriceEntry {
 }
 
 #[cfg(feature = "capnp")]
-impl crate::schema_capnp::CapnpDeserialize for PriceEntry {
+impl crate::CapnpDeserialize for PriceEntry {
     fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
     where
         Self: Sized,

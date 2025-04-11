@@ -31,7 +31,7 @@ pub struct OrderbookData {
 }
 
 #[cfg(feature = "capnp")]
-impl crate::schema_capnp::CapnpSerialize for OrderbookEntry {
+impl crate::CapnpSerialize for OrderbookEntry {
     fn to_capnp(&self) -> Vec<u8> {
         // Initialize a new Cap'n Proto message builder
         let mut message = capnp::message::Builder::new_default();
@@ -85,7 +85,7 @@ impl crate::schema_capnp::CapnpSerialize for OrderbookEntry {
 }
 
 #[cfg(feature = "capnp")]
-impl crate::schema_capnp::CapnpDeserialize for OrderbookEntry {
+impl crate::CapnpDeserialize for OrderbookEntry {
     fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
     where
         Self: Sized,

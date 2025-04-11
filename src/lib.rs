@@ -32,16 +32,18 @@ pub use interval::Interval;
 
 // Capnp generated schema
 #[cfg(feature = "capnp")]
-pub mod schema_capnp {
-    pub trait CapnpSerialize {
-        fn to_capnp(&self) -> Vec<u8>;
-    }
-
-    pub trait CapnpDeserialize {
-        fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
-        where
-            Self: Sized;
-    }
-
+mod schema_capnp {
     include!(concat!(env!("OUT_DIR"), "/schema_capnp.rs"));
+}
+
+#[cfg(feature = "capnp")]
+pub trait CapnpSerialize {
+    fn to_capnp(&self) -> Vec<u8>;
+}
+
+#[cfg(feature = "capnp")]
+pub trait CapnpDeserialize {
+    fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
+    where
+        Self: Sized;
 }
