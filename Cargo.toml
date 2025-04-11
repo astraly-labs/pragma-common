@@ -10,16 +10,6 @@ keywords = ["pragma", "common", "utils"]
 repository = "https://github.com/astraly-labs/pragma-common"
 license = "MIT"
 
-[package.metadata.nextest.profile.ci]
-# Fail fast to avoid wasting CI minutes
-fail-fast = true
-# Use more conservative timeouts for CI environments
-slow-timeout = { period = "60s", terminate-after = 3 }
-# Optimize for GitHub Actions runners
-test-threads = "num-cpus"
-# Filter out ignored tests
-filter = { ignore = true }
-
 [features]
 serde = ["dep:serde"]
 capnp = ["dep:capnp"]
