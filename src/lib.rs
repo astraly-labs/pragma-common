@@ -26,6 +26,9 @@ pub use instrument_type::{InstrumentType, InstrumentTypeError};
 pub mod aggregation;
 pub use aggregation::AggregationMode;
 
+// An util to manage multiple tasks gracefully
+pub mod services;
+
 // Pragma Time Intervals
 pub mod interval;
 pub use interval::Interval;
