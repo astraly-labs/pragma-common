@@ -1,15 +1,10 @@
+//! pragma-common
 //! Main types used through our rust projects at Pragma.
-
-// Entries, i.e Spot/Perp/Future
+// Entries retrieved through different markets.
 pub mod entries;
-pub mod instrument_type;
-pub use instrument_type::InstrumentType;
 
 // Web3 types
 pub mod web3;
-
-// Orderbooks, i.e complete orderbooks or snapshot & updates.
-pub mod orderbook;
 
 // Telemetry init through OTEL
 #[cfg(feature = "telemetry")]
@@ -18,6 +13,14 @@ pub mod telemetry;
 // Pair
 pub mod pair;
 pub use pair::Pair;
+
+// A complete managed Orderbook.
+pub mod orderbook;
+pub use orderbook::{Orderbook, OrderbookError};
+
+// Types of instrument supported, i.e spot, perp etc.
+pub mod instrument_type;
+pub use instrument_type::{InstrumentType, InstrumentTypeError};
 
 // Pragma Aggregations
 pub mod aggregation;

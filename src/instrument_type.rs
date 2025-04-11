@@ -1,7 +1,5 @@
 use std::{fmt::Display, str::FromStr};
 
-use crate::entries::MarketEntry;
-
 #[derive(Debug, thiserror::Error)]
 pub enum InstrumentTypeError {
     #[error("Unknown instrument_type")]
@@ -10,6 +8,7 @@ pub enum InstrumentTypeError {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum InstrumentType {
     Spot,
     Perp,
@@ -45,15 +44,6 @@ impl Display for InstrumentType {
         match self {
             Self::Spot => write!(f, "spot"),
             Self::Perp => write!(f, "perp"),
-        }
-    }
-}
-
-impl From<&MarketEntry> for InstrumentType {
-    fn from(value: &MarketEntry) -> Self {
-        match value {
-            MarketEntry::Spot(_) => Self::Spot,
-            MarketEntry::Perp(_) => Self::Perp,
         }
     }
 }

@@ -1,34 +1,37 @@
 #[cfg(feature = "capnp")]
 use pragma_common::{
-    entries::{BaseEntry, MarketEntry, SpotEntry},
-    orderbook::{Depth, DepthLevel, OrderbookSnapshot, OrderbookUpdate},
+    entries::depth::{DepthEntry, DepthLevel},
+    entries::orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType},
+    entries::price::PriceEntry,
+    instrument_type::InstrumentType,
     schema_capnp::{CapnpDeserialize, CapnpSerialize},
     web3::Chain,
-    InstrumentType, Pair,
+    Pair,
 };
 
 #[cfg(feature = "capnp")]
 #[test]
-fn test_market_entry_capnp() {
-    let x = MarketEntry::Spot(SpotEntry {
-        base: BaseEntry {
-            timestamp: 1,
-            source: "TEST".to_string(),
-            publisher: "TEST".to_string(),
-        },
+fn test_price_entry_capnp() {
+    let x = PriceEntry {
+        source: "TEST".to_string(),
+        chain: Some(Chain::Ethereum),
         pair: Pair::from_currencies("BTC", "USD"),
+        publisher: "TEST".to_string(),
+        timestamp: 145567,
         price: 12000,
         volume: 0,
-    });
+        expiration_timestamp: Some(0),
+    };
     let payload = x.to_capnp();
-    let entry: MarketEntry = MarketEntry::from_capnp(&payload).unwrap();
+    let entry: PriceEntry = PriceEntry::from_capnp(&payload).unwrap();
     assert_eq!(entry, x);
+    assert_eq!(entry.instrument_type(), InstrumentType::Perp);
 }
 
 #[cfg(feature = "capnp")]
 #[test]
-fn test_depth_capnp() {
-    let x = Depth {
+fn test_depth_entry_capnp() {
+    let x = DepthEntry {
         depth: DepthLevel {
             percentage: 0.02,
             bid: 42.69,
@@ -40,38 +43,25 @@ fn test_depth_capnp() {
         chain: Some(Chain::Gnosis),
     };
     let payload = x.to_capnp();
-    let depth: Depth = Depth::from_capnp(&payload).unwrap();
+    let depth: DepthEntry = DepthEntry::from_capnp(&payload).unwrap();
     assert_eq!(depth, x);
 }
 
 #[cfg(feature = "capnp")]
 #[test]
 fn test_orderbook_update_capnp() {
-    let x = OrderbookUpdate {
+    let x = OrderbookEntry {
         source: "TEST".to_string(),
         instrument_type: InstrumentType::Spot,
         pair: Pair::from_currencies("BTC", "USD"),
-        last_update_id: 4242,
-        bids: vec![(0.0, 1.0), (42.00, 1.0)],
-        asks: vec![(42.00, 69.00), (1.00, 42.00)],
+        r#type: OrderbookUpdateType::Update,
+        data: OrderbookData {
+            update_id: 4242,
+            bids: vec![(0.0, 1.0), (42.00, 1.0)],
+            asks: vec![(42.00, 69.00), (1.00, 42.00)],
+        },
     };
     let payload = x.to_capnp();
-    let orderbook_update: OrderbookUpdate = OrderbookUpdate::from_capnp(&payload).unwrap();
-    assert_eq!(orderbook_update, x);
-}
-
-#[cfg(feature = "capnp")]
-#[test]
-fn test_orderbook_snapshot_capnp() {
-    let x = OrderbookSnapshot {
-        source: "TEST".to_string(),
-        instrument_type: InstrumentType::Spot,
-        pair: Pair::from_currencies("BTC", "USD"),
-        last_update_id: 4242,
-        bids: vec![(0.0, 1.0), (42.00, 1.0)],
-        asks: vec![(42.00, 69.00), (1.00, 42.00)],
-    };
-    let payload = x.to_capnp();
-    let orderbook_update: OrderbookSnapshot = OrderbookSnapshot::from_capnp(&payload).unwrap();
+    let orderbook_update: OrderbookEntry = OrderbookEntry::from_capnp(&payload).unwrap();
     assert_eq!(orderbook_update, x);
 }
