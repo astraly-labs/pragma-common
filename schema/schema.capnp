@@ -65,13 +65,12 @@ struct PriceEntry {
     chain @2 :Chain;
   }
   pair @3 :Pair;
-  publisher @4 :Text;
-  timestamp @5 :Int64;
-  price @6 :UInt128;
-  volume @7 :UInt128;
+  timestamp @4 :Int64;
+  price @5 :UInt128;
+  volume @6 :UInt128;
   expirationTimestamp :union {
-    noExpiration @8 :Void;
-    expirationTimestamp @9 :Int64;
+    noExpiration @7 :Void;
+    expirationTimestamp @8 :Int64;
   }
 }
 

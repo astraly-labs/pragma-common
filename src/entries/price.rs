@@ -12,7 +12,6 @@ pub struct PriceEntry {
     pub source: String,
     pub chain: Option<Chain>,
     pub pair: Pair,
-    pub publisher: String,
     pub timestamp: i64,
     pub price: u128,
     pub volume: u128,
@@ -67,9 +66,6 @@ impl crate::CapnpSerialize for PriceEntry {
         let mut pair = builder.reborrow().init_pair();
         pair.set_base(&self.pair.base);
         pair.set_quote(&self.pair.quote);
-
-        // Set publisher
-        builder.set_publisher(&self.publisher);
 
         // Set timestamp
         builder.set_timestamp(self.timestamp);
@@ -141,9 +137,6 @@ impl crate::CapnpDeserialize for PriceEntry {
             quote: pair_reader.get_quote()?.to_string()?,
         };
 
-        // Extract publisher
-        let publisher = reader.get_publisher()?.to_string()?;
-
         // Extract timestamp
         let timestamp = reader.get_timestamp();
 
@@ -165,7 +158,6 @@ impl crate::CapnpDeserialize for PriceEntry {
             source,
             chain,
             pair,
-            publisher,
             timestamp,
             price,
             volume,

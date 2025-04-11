@@ -15,7 +15,6 @@ fn test_price_entry_capnp() {
         source: "TEST".to_string(),
         chain: Some(Chain::Ethereum),
         pair: Pair::from_currencies("BTC", "USD"),
-        publisher: "TEST".to_string(),
         timestamp: 145567,
         price: 12000,
         volume: 0,
