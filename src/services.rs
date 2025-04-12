@@ -1,8 +1,9 @@
 /// Inspiration from:
 /// <https://github.com/madara-alliance/madara/blob/main/crates/madara/primitives/utils/src/service.rs>
+use std::{panic, time::Duration};
+
 use anyhow::Context;
 use futures::Future;
-use std::{panic, time::Duration};
 use tokio::task::JoinSet;
 use tokio_util::sync::CancellationToken;
 

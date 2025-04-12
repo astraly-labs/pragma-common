@@ -2,7 +2,7 @@
 use capnp::serialize;
 
 #[cfg(feature = "capnp")]
-use crate::schema_capnp::{self};
+use crate::schema_capnp;
 use crate::{instrument_type::InstrumentType, pair::Pair, web3::Chain};
 
 #[derive(Debug, Clone, PartialEq, Eq)]

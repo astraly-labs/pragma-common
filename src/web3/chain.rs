@@ -1,6 +1,14 @@
 use std::str::FromStr;
 
-#[derive(Debug, Copy, Hash, Eq, Clone, PartialEq)]
+use super::{Token, APT, AVAX, BNB, ETH, POL, SOL, SUI, USDC, USDT, WLD, XDAI};
+
+#[derive(Debug, thiserror::Error)]
+pub enum ChainError {
+    #[error("Unknown chain: {0}")]
+    UnknownChain(String),
+}
+
+#[derive(Debug, Copy, Hash, Eq, Clone, PartialEq, PartialOrd, Ord)]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Serialize, serde::Deserialize),
@@ -26,25 +34,37 @@ pub enum Chain {
 }
 
 impl Chain {
-    #[must_use]
-    pub const fn id(&self) -> Option<u64> {
-        let chain_id = match self {
-            Self::Ethereum => 1,
-            Self::Optimism => 10,
-            Self::Polygon => 137,
-            Self::ZkSync => 324,
-            Self::Base => 8453,
-            Self::Arbitrum => 42161,
-            Self::Bnb => 56,
-            Self::Avalanche => 43114,
-            Self::Gnosis => 100,
-            Self::Worldchain => 480,
-            _ => {
-                return None;
-            }
-        };
+    pub fn from_chain_id(id: u64) -> Option<Self> {
+        match id {
+            1 => Some(Self::Ethereum),
+            10 => Some(Self::Optimism),
+            137 => Some(Self::Polygon),
+            324 => Some(Self::ZkSync),
+            8453 => Some(Self::Base),
+            42161 => Some(Self::Arbitrum),
+            56 => Some(Self::Bnb),
+            43114 => Some(Self::Avalanche),
+            100 => Some(Self::Gnosis),
+            480 => Some(Self::Worldchain),
+            _ => None,
+        }
+    }
 
-        Some(chain_id)
+    #[must_use]
+    pub const fn chain_id(&self) -> Option<u64> {
+        match self {
+            Self::Ethereum => Some(1),
+            Self::Optimism => Some(10),
+            Self::Polygon => Some(137),
+            Self::ZkSync => Some(324),
+            Self::Base => Some(8453),
+            Self::Arbitrum => Some(42161),
+            Self::Bnb => Some(56),
+            Self::Avalanche => Some(43114),
+            Self::Gnosis => Some(100),
+            Self::Worldchain => Some(480),
+            _ => None,
+        }
     }
 
     pub const fn is_evm(&self) -> bool {
@@ -63,19 +83,40 @@ impl Chain {
         )
     }
 
-    pub fn from_id(id: u64) -> Result<Self, ChainError> {
-        match id {
-            1 => Ok(Self::Ethereum),
-            10 => Ok(Self::Optimism),
-            137 => Ok(Self::Polygon),
-            324 => Ok(Self::ZkSync),
-            8453 => Ok(Self::Base),
-            42161 => Ok(Self::Arbitrum),
-            56 => Ok(Self::Bnb),
-            43114 => Ok(Self::Avalanche),
-            100 => Ok(Self::Gnosis),
-            480 => Ok(Self::Worldchain),
-            _ => Err(ChainError::UnknownChainId(id.to_string())),
+    #[must_use]
+    /// Returns the gas token for the chain
+    pub fn gas_token(&self) -> Token {
+        match self {
+            Self::Ethereum
+            | Self::Base
+            | Self::Optimism
+            | Self::Starknet
+            | Self::Arbitrum
+            | Self::ZkSync => ETH(),
+            Self::Solana => SOL(),
+            Self::Sui => SUI(),
+            Self::Aptos => APT(),
+            Self::Polygon => POL(),
+            Self::Bnb => BNB(),
+            Self::Avalanche => AVAX(),
+            Self::Gnosis => XDAI(),
+            Self::Worldchain => WLD(),
+        }
+    }
+
+    /// Returns the main stablecoin for the chain (or None if there is none)
+    pub fn usd_token(&self) -> Token {
+        match self {
+            Self::Polygon | Self::Optimism | Self::Arbitrum | Self::Gnosis | Self::Aptos => USDT(),
+            Self::Ethereum
+            | Self::Base
+            | Self::ZkSync
+            | Self::Bnb
+            | Self::Avalanche
+            | Self::Worldchain
+            | Self::Solana
+            | Self::Starknet
+            | Self::Sui => USDC(),
         }
     }
 }
@@ -105,13 +146,7 @@ impl FromStr for Chain {
             "avalanche" => Ok(Self::Avalanche),
             "gnosis" => Ok(Self::Gnosis),
             "worldchain" => Ok(Self::Worldchain),
-            _ => Err(ChainError::UnknownChainId(s.to_string())),
+            _ => Err(ChainError::UnknownChain(s.to_string())),
         }
     }
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum ChainError {
-    #[error("Unknown chain id: {0}")]
-    UnknownChainId(String),
 }

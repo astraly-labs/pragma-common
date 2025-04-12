@@ -2,17 +2,17 @@
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum StarknetNetwork {
-    #[cfg_attr(feature = "serde", serde(rename = "sepolia"))]
-    Sepolia,
-    #[cfg_attr(feature = "serde", serde(rename = "mainnet"))]
+    #[cfg_attr(feature = "serde", serde(rename = "starknet-mainnet"))]
     Mainnet,
+    #[cfg_attr(feature = "serde", serde(rename = "starknet-sepolia"))]
+    Sepolia,
 }
 
-impl StarknetNetwork {
-    pub fn as_str(&self) -> &'static str {
+impl std::fmt::Display for StarknetNetwork {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Sepolia => "sepolia",
-            Self::Mainnet => "mainnet",
+            Self::Mainnet => write!(f, "starknet-mainnet"),
+            Self::Sepolia => write!(f, "starknet-sepolia"),
         }
     }
 }

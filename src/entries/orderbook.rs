@@ -1,5 +1,5 @@
 #[cfg(feature = "capnp")]
-use crate::schema_capnp::{self};
+use crate::schema_capnp;
 use crate::{instrument_type::InstrumentType, pair::Pair};
 
 #[derive(Debug, Clone, PartialEq)]

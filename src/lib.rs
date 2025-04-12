@@ -1,10 +1,11 @@
 //! pragma-common
 //! Main types used through our rust projects at Pragma.
-// Entries retrieved through different markets.
-pub mod entries;
-
 // Web3 types
 pub mod web3;
+
+// Entries retrieved through different markets.
+// This is the data that we'll push in our internal Kafka.
+pub mod entries;
 
 // Telemetry init through OTEL
 #[cfg(feature = "telemetry")]
@@ -34,17 +35,19 @@ pub mod services;
 pub mod interval;
 pub use interval::Interval;
 
-// Capnp generated schema
+// Capnp generated schema. Only related to `entries`.
 #[cfg(feature = "capnp")]
 mod schema_capnp {
     include!(concat!(env!("OUT_DIR"), "/schema_capnp.rs"));
 }
 
+// Used to serialize a struct into a payload with capnp.
 #[cfg(feature = "capnp")]
 pub trait CapnpSerialize {
     fn to_capnp(&self) -> Vec<u8>;
 }
 
+// Used to deserialize a capnp payload into a struct.
 #[cfg(feature = "capnp")]
 pub trait CapnpDeserialize {
     fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>

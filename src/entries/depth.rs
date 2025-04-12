@@ -2,11 +2,12 @@
 use capnp::serialize;
 
 #[cfg(feature = "capnp")]
-use crate::schema_capnp::{self};
+use crate::schema_capnp;
 use crate::{instrument_type::InstrumentType, web3::Chain, Pair};
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct DepthEntry {
     pub source: String,
     pub chain: Option<Chain>,
@@ -17,6 +18,7 @@ pub struct DepthEntry {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct DepthLevel {
     pub percentage: f64,
     pub bid: f64,
