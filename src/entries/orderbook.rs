@@ -11,6 +11,7 @@ pub struct OrderbookEntry {
     pub pair: Pair,
     pub r#type: OrderbookUpdateType,
     pub data: OrderbookData,
+    pub timestamp: i64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -77,6 +78,9 @@ impl crate::CapnpSerialize for OrderbookEntry {
             ask.set_quantity(*quantity);
         }
 
+        // Set timestamp
+        builder.set_timestamp(self.timestamp);
+
         // Serialize the message to a byte vector
         let mut buffer = Vec::new();
         capnp::serialize::write_message(&mut buffer, &message).unwrap();
@@ -139,6 +143,9 @@ impl crate::CapnpDeserialize for OrderbookEntry {
             })
             .collect::<Result<Vec<_>, capnp::Error>>()?;
 
+        // Extract timestamp
+        let timestamp = reader.get_timestamp();
+
         // Construct the OrderbookData struct
         let data = OrderbookData {
             update_id,
@@ -153,6 +160,7 @@ impl crate::CapnpDeserialize for OrderbookEntry {
             pair,
             r#type,
             data,
+            timestamp,
         })
     }
 }

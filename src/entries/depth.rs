@@ -13,6 +13,7 @@ pub struct DepthEntry {
     pub chain: Option<Chain>,
     pub instrument_type: InstrumentType,
     pub pair: Pair,
+    pub timestamp: i64,
     pub depth: DepthLevel,
 }
 
@@ -72,6 +73,9 @@ impl crate::CapnpSerialize for DepthEntry {
             }
         };
 
+        // Set timestamp
+        builder.set_timestamp(self.timestamp);
+
         let mut buffer = Vec::new();
         serialize::write_message(&mut buffer, &message).unwrap();
         buffer
@@ -106,6 +110,9 @@ impl crate::CapnpDeserialize for DepthEntry {
             ask: depth_reader.get_ask(),
         };
 
+        // Extract timestamp
+        let timestamp = reader.get_timestamp();
+
         // Extract chain from the union
         let chain = match reader.get_chain().which()? {
             schema_capnp::depth_entry::chain::NoChain(()) => None,
@@ -132,6 +139,7 @@ impl crate::CapnpDeserialize for DepthEntry {
             instrument_type,
             pair,
             depth,
+            timestamp,
             chain,
         })
     }

@@ -39,6 +39,7 @@ fn test_depth_entry_capnp() {
         pair: Pair::from_currencies("BTC", "USD"),
         source: "TEST".to_string(),
         chain: Some(Chain::Gnosis),
+        timestamp: 145567,
     };
     let payload = x.to_capnp();
     let depth: DepthEntry = DepthEntry::from_capnp(&payload).unwrap();
@@ -58,6 +59,7 @@ fn test_orderbook_update_capnp() {
             bids: vec![(0.0, 1.0), (42.00, 1.0)],
             asks: vec![(42.00, 69.00), (1.00, 42.00)],
         },
+        timestamp: 145567,
     };
     let payload = x.to_capnp();
     let orderbook_update: OrderbookEntry = OrderbookEntry::from_capnp(&payload).unwrap();

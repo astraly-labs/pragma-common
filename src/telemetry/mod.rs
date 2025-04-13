@@ -32,7 +32,7 @@ pub enum TelemetryError {
 
 pub fn init_telemetry(
     app_name: &str,
-    collection_endpoint: Option<&str>,
+    collection_endpoint: Option<String>,
 ) -> Result<(), TelemetryError> {
     let tracing_subscriber = tracing_subscriber::registry().with(
         EnvFilter::builder()
@@ -41,9 +41,9 @@ pub fn init_telemetry(
     );
 
     if let Some(endpoint) = collection_endpoint {
-        let tracer_provider = init_tracer_provider(app_name, endpoint);
-        let logger_provider = init_logs_provider(app_name, endpoint)?;
-        init_meter_provider(app_name, endpoint)?;
+        let tracer_provider = init_tracer_provider(app_name, &endpoint);
+        let logger_provider = init_logs_provider(app_name, &endpoint)?;
+        init_meter_provider(app_name, &endpoint)?;
 
         tracing_subscriber
             .with(tracing_subscriber::fmt::layer())

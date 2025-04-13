@@ -80,6 +80,7 @@ struct OrderbookEntry {
   pair @2 :Pair;
   type @3 :OrderbookUpdateType;
   data @4 :OrderbookData;
+  timestamp @5 :Int64;
 }
 
 struct DepthEntry {
@@ -91,4 +92,5 @@ struct DepthEntry {
     noChain @4 :Void;
     chain @5 :Chain;
   }
+  timestamp @6 :Int64;
 }
