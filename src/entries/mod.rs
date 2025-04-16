@@ -6,3 +6,6 @@ pub mod orderbook;
 
 // Depth entries.
 pub mod depth;
+
+// Funding rate entries.
+pub mod funding_rate;

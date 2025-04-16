@@ -12,7 +12,7 @@ pub struct PriceEntry {
     pub source: String,
     pub chain: Option<Chain>,
     pub pair: Pair,
-    pub timestamp: i64,
+    pub timestamp_ms: i64,
     pub price: u128,
     pub volume: u128,
     pub expiration_timestamp: Option<i64>,
@@ -67,8 +67,8 @@ impl crate::CapnpSerialize for PriceEntry {
         pair.set_base(&self.pair.base);
         pair.set_quote(&self.pair.quote);
 
-        // Set timestamp
-        builder.set_timestamp(self.timestamp);
+        // Set timestamp_ms
+        builder.set_timestamp_ms(self.timestamp_ms);
 
         // Set price (u128 to UInt128)
         let mut price_builder = builder.reborrow().init_price();
@@ -137,8 +137,8 @@ impl crate::CapnpDeserialize for PriceEntry {
             quote: pair_reader.get_quote()?.to_string()?,
         };
 
-        // Extract timestamp
-        let timestamp = reader.get_timestamp();
+        // Extract timestamp_ms
+        let timestamp_ms = reader.get_timestamp_ms();
 
         // Extract price (UInt128 to u128)
         let price_reader = reader.get_price()?;
@@ -158,7 +158,7 @@ impl crate::CapnpDeserialize for PriceEntry {
             source,
             chain,
             pair,
-            timestamp,
+            timestamp_ms,
             price,
             volume,
             expiration_timestamp,
