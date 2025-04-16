@@ -31,6 +31,10 @@ pub use aggregation::AggregationMode;
 #[cfg(feature = "services")]
 pub mod services;
 
+// A structure allowing us to have multiple handles dependent on each others.
+#[cfg(feature = "task-group")]
+pub mod task_group;
+
 // Pragma Time Intervals
 pub mod interval;
 pub use interval::Interval;

@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -31,6 +31,7 @@ services = [
   "dep:tokio-util",
   "dep:anyhow",
 ]
+task-group = ["dep:tokio", "dep:futures"]
 
 [build-dependencies]
 capnpc = { version = "0.21.0" }

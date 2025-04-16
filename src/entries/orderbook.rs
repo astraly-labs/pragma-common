@@ -22,6 +22,15 @@ pub enum OrderbookUpdateType {
     Snapshot,
 }
 
+impl std::fmt::Display for OrderbookUpdateType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Update => write!(f, "update"),
+            Self::Snapshot => write!(f, "snapshot"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
