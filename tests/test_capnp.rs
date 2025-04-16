@@ -69,11 +69,11 @@ fn test_orderbook_update_capnp() {
 
 #[cfg(feature = "capnp")]
 #[test]
-fn test_funding_rate_capnp() {
+fn test_annualized_rate_capnp() {
     let x = FundingRateEntry {
         source: "TEST".to_string(),
         pair: Pair::from_currencies("BTC", "USD"),
-        funding_rate: 42.42,
+        annualized_rate: 42.42,
         timestamp_ms: 145567,
     };
     let payload = x.to_capnp();

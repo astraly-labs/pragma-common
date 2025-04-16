@@ -98,6 +98,6 @@ struct DepthEntry {
 struct FundingRateEntry {
   source @0 :Text;
   pair @1 :Pair;
-  fundingRate @2 :Float64;
+  annualizedRate @2 :Float64;
   timestampMs @3 :Int64;
 }

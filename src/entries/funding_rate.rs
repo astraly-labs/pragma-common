@@ -11,7 +11,7 @@ use crate::Pair;
 pub struct FundingRateEntry {
     pub source: String,
     pub pair: Pair,
-    pub funding_rate: f64,
+    pub annualized_rate: f64,
     pub timestamp_ms: i64,
 }
 
@@ -30,7 +30,7 @@ impl crate::CapnpSerialize for FundingRateEntry {
         pair.set_quote(&self.pair.quote);
 
         // Set funding rate
-        builder.set_funding_rate(self.funding_rate);
+        builder.set_annualized_rate(self.annualized_rate);
 
         // Set timestamp_ms
         builder.set_timestamp_ms(self.timestamp_ms);
@@ -52,7 +52,7 @@ impl crate::CapnpDeserialize for FundingRateEntry {
 
         let source = reader.get_source()?.to_string()?;
 
-        let funding_rate = reader.get_funding_rate();
+        let annualized_rate = reader.get_annualized_rate();
 
         let pair_reader = reader.get_pair()?;
         let pair = Pair {
@@ -66,7 +66,7 @@ impl crate::CapnpDeserialize for FundingRateEntry {
         Ok(FundingRateEntry {
             source,
             pair,
-            funding_rate,
+            annualized_rate,
             timestamp_ms,
         })
     }
