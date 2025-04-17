@@ -26,7 +26,6 @@ pub enum ConversionError {
 
 #[derive(Debug, thiserror::Error)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 pub enum SignerError {
     #[error(transparent)]
     ConversionError(#[from] ConversionError),
