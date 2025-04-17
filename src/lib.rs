@@ -15,10 +15,6 @@ pub mod telemetry;
 pub mod pair;
 pub use pair::Pair;
 
-// A complete managed Orderbook.
-pub mod orderbook;
-pub use orderbook::{Orderbook, OrderbookError};
-
 // Types of instrument supported, i.e spot, perp etc.
 pub mod instrument_type;
 pub use instrument_type::{InstrumentType, InstrumentTypeError};
