@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -37,6 +37,7 @@ services = [
 capnpc = { version = "0.21.0" }
 
 [dependencies]
+bigdecimal = "0.4.8"
 thiserror = "2.0.12"
 
 # feature[services]
