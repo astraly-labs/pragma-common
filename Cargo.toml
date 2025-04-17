@@ -61,7 +61,7 @@ serde = { version = "1.0", features = ["derive"], optional = true }
 # feature[starknet]
 starknet = { version = "0.14", optional = true }
 starknet-crypto = { version = "0.7.4", optional = true }
-cainome = { git = "https://github.com/cartridge-gg/cainome", tag = "v0.4.5", features = [
+cainome = { version = "0.5.0",features = [
   "abigen-rs",
 ], optional = true }
 indexmap = { version = "2.2", optional = true }
