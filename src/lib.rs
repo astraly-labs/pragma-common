@@ -7,6 +7,9 @@ pub mod web3;
 // This is the data that we'll push in our internal Kafka.
 pub mod entries;
 
+#[cfg(feature = "starknet")]
+pub mod starknet;
+
 // Telemetry init through OTEL
 #[cfg(feature = "telemetry")]
 pub mod telemetry;
