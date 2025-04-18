@@ -6,10 +6,11 @@ pub enum InstrumentTypeError {
     Unknown,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Hash, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum InstrumentType {
+    #[default]
     Spot,
     Perp,
 }
