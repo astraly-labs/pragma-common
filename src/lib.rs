@@ -14,9 +14,6 @@ pub mod starknet;
 #[cfg(feature = "telemetry")]
 pub mod telemetry;
 
-// Orderbook
-pub mod orderbook;
-
 // Pair
 pub mod pair;
 pub use pair::Pair;
