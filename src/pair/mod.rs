@@ -143,3 +143,185 @@ macro_rules! pair {
         }
     }};
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    /// Test `from_stable_pair` with various inputs
+    #[rstest]
+    #[case("BTCUSDT", Some(Pair { base: "BTC".to_string(), quote: "USD".to_string() }))]
+    #[case("ETH-USDC", Some(Pair { base: "ETH".to_string(), quote: "USD".to_string() }))]
+    #[case("SOL_USDT", Some(Pair { base: "SOL".to_string(), quote: "USD".to_string() }))]
+    #[case("XRP/USD", Some(Pair { base: "XRP".to_string(), quote: "USD".to_string() }))]
+    #[case("BTC/ETH", None)] // No stable suffix
+    #[case("USDUSDT", Some(Pair { base: "USD".to_string(), quote: "USD".to_string() }))]
+    #[case("USDTUSD", Some(Pair { base: "USDT".to_string(), quote: "USD".to_string() }))]
+    #[case("btc_usdt", Some(Pair { base: "BTC".to_string(), quote: "USD".to_string() }))]
+    #[case("EthDai", Some(Pair { base: "ETH".to_string(), quote: "USD".to_string() }))]
+    #[case("", None)] // Empty string
+    #[case("BTC", None)] // No stable suffix
+    #[case("USDT", Some(Pair { base: "".to_string(), quote: "USD".to_string() }))]
+    fn test_from_stable_pair(#[case] input: &str, #[case] expected: Option<Pair>) {
+        assert_eq!(Pair::from_stable_pair(input), expected);
+    }
+
+    /// Test `create_routed_pair` with pairs sharing a common quote
+    #[rstest]
+    #[case(
+        Pair { base: "BTC".to_string(), quote: "USD".to_string() },
+        Pair { base: "ETH".to_string(), quote: "USD".to_string() },
+        Pair { base: "BTC".to_string(), quote: "ETH".to_string() }
+    )]
+    #[case(
+        Pair { base: "SOL".to_string(), quote: "USDT".to_string() },
+        Pair { base: "LUNA".to_string(), quote: "USDT".to_string() },
+        Pair { base: "SOL".to_string(), quote: "LUNA".to_string() }
+    )]
+    fn test_create_routed_pair(
+        #[case] base_pair: Pair,
+        #[case] quote_pair: Pair,
+        #[case] expected: Pair,
+    ) {
+        assert_eq!(Pair::create_routed_pair(&base_pair, &quote_pair), expected);
+    }
+
+    /// Test `from_currencies` with different case inputs
+    #[rstest]
+    #[case("btc", "usd", Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
+    #[case("Eth", "Dai", Pair { base: "ETH".to_string(), quote: "DAI".to_string() })]
+    #[case("sol", "usdt", Pair { base: "SOL".to_string(), quote: "USDT".to_string() })]
+    fn test_from_currencies(#[case] base: &str, #[case] quote: &str, #[case] expected: Pair) {
+        assert_eq!(Pair::from_currencies(base, quote), expected);
+    }
+
+    /// Test `as_tuple` returns the correct tuple
+    #[rstest]
+    #[case(Pair { base: "BTC".to_string(), quote: "USD".to_string() }, ("BTC".to_string(), "USD".to_string()))]
+    #[case(Pair { base: "ETH".to_string(), quote: "USDT".to_string() }, ("ETH".to_string(), "USDT".to_string()))]
+    fn test_as_tuple(#[case] pair: Pair, #[case] expected: (String, String)) {
+        assert_eq!(pair.as_tuple(), expected);
+    }
+
+    /// Test `format_with_separator` with different separators
+    #[rstest]
+    #[case(Pair { base: "BTC".to_string(), quote: "USD".to_string() }, "/", "BTC/USD")]
+    #[case(Pair { base: "ETH".to_string(), quote: "USDT".to_string() }, "-", "ETH-USDT")]
+    #[case(Pair { base: "SOL".to_string(), quote: "USDC".to_string() }, "_", "SOL_USDC")]
+    fn test_format_with_separator(
+        #[case] pair: Pair,
+        #[case] separator: &str,
+        #[case] expected: &str,
+    ) {
+        assert_eq!(pair.format_with_separator(separator), expected);
+    }
+
+    /// Test `to_pair_id` uses the standard "/" separator
+    #[rstest]
+    #[case(Pair { base: "BTC".to_string(), quote: "USD".to_string() }, "BTC/USD")]
+    #[case(Pair { base: "ETH".to_string(), quote: "USDT".to_string() }, "ETH/USDT")]
+    fn test_to_pair_id(#[case] pair: Pair, #[case] expected: &str) {
+        assert_eq!(pair.to_pair_id(), expected);
+    }
+
+    /// Test `Display` implementation
+    #[rstest]
+    #[case(Pair { base: "BTC".to_string(), quote: "USD".to_string() }, "BTC/USD")]
+    #[case(Pair { base: "ETH".to_string(), quote: "USDT".to_string() }, "ETH/USDT")]
+    fn test_display(#[case] pair: Pair, #[case] expected: &str) {
+        assert_eq!(format!("{}", pair), expected);
+    }
+
+    /// Test `From<Pair> for String`
+    #[rstest]
+    #[case(Pair { base: "BTC".to_string(), quote: "USD".to_string() }, "BTC/USD")]
+    #[case(Pair { base: "ETH".to_string(), quote: "USDT".to_string() }, "ETH/USDT")]
+    fn test_from_pair_to_string(#[case] pair: Pair, #[case] expected: &str) {
+        let s: String = pair.into();
+        assert_eq!(s, expected);
+    }
+
+    /// Test `From<&str> for Pair` with different separators and whitespace
+    #[rstest]
+    #[case("BTC/USD", Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
+    #[case("ETH-USDT", Pair { base: "ETH".to_string(), quote: "USDT".to_string() })]
+    #[case("SOL_USDC", Pair { base: "SOL".to_string(), quote: "USDC".to_string() })]
+    #[case(" btc / usd ", Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
+    fn test_from_str_to_pair(#[case] input: &str, #[case] expected: Pair) {
+        let pair: Pair = input.into();
+        assert_eq!(pair, expected);
+    }
+
+    /// Test `From<String> for Pair`
+    #[rstest]
+    #[case("BTC/USD".to_string(), Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
+    #[case("ETH-USDT".to_string(), Pair { base: "ETH".to_string(), quote: "USDT".to_string() })]
+    fn test_from_string_to_pair(#[case] input: String, #[case] expected: Pair) {
+        let pair: Pair = input.into();
+        assert_eq!(pair, expected);
+    }
+
+    /// Test `FromStr for Pair`
+    #[rstest]
+    #[case("BTC/USD", Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
+    #[case("ETH-USDT", Pair { base: "ETH".to_string(), quote: "USDT".to_string() })]
+    fn test_fromstr(#[case] input: &str, #[case] expected: Pair) {
+        let pair: Pair = input.parse().unwrap();
+        assert_eq!(pair, expected);
+    }
+
+    /// Test `From<(String, String)> for Pair`
+    #[rstest]
+    #[case(("btc".to_string(), "usd".to_string()), Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
+    #[case(("Eth".to_string(), "Dai".to_string()), Pair { base: "ETH".to_string(), quote: "DAI".to_string() })]
+    fn test_from_tuple(#[case] input: (String, String), #[case] expected: Pair) {
+        let pair: Pair = input.into();
+        assert_eq!(pair, expected);
+    }
+
+    /// Test the `pair!` macro with valid inputs
+    #[test]
+    fn test_pair_macro() {
+        assert_eq!(
+            pair!("BTC/USD"),
+            Pair {
+                base: "BTC".to_string(),
+                quote: "USD".to_string()
+            }
+        );
+        assert_eq!(
+            pair!("ETH-USDT"),
+            Pair {
+                base: "ETH".to_string(),
+                quote: "USDT".to_string()
+            }
+        );
+        assert_eq!(
+            pair!("SOL_USDC"),
+            Pair {
+                base: "SOL".to_string(),
+                quote: "USDC".to_string()
+            }
+        );
+        assert_eq!(
+            pair!(" btc / usd "),
+            Pair {
+                base: "BTC".to_string(),
+                quote: "USD".to_string()
+            }
+        );
+    }
+
+    /// Test the `Default` implementation
+    #[test]
+    fn test_default() {
+        assert_eq!(
+            Pair::default(),
+            Pair {
+                base: "".to_string(),
+                quote: "".to_string()
+            }
+        );
+    }
+}
