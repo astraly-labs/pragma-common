@@ -12,7 +12,7 @@ license = "MIT"
 
 [features]
 serde = ["dep:serde"]
-proto = ["dep:prost", "dep:anyhow"]
+proto = ["dep:prost"]
 utoipa = ["dep:utoipa"]
 task-group = ["dep:tokio", "dep:futures"]
 telemetry = [
