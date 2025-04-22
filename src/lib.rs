@@ -1,5 +1,3 @@
-//! pragma-common
-//! Main types used through our rust projects at Pragma.
 // Web3 types
 pub mod web3;
 
@@ -38,22 +36,22 @@ pub mod task_group;
 pub mod interval;
 pub use interval::Interval;
 
-// Capnp generated schema. Only related to `entries`.
-#[cfg(feature = "capnp")]
-mod schema_capnp {
-    include!(concat!(env!("OUT_DIR"), "/schema_capnp.rs"));
+// Protobuf generated schema. Only related to `entries`.
+#[cfg(feature = "proto")]
+pub mod schema {
+    include!(concat!(env!("OUT_DIR"), "/pragma_common.rs"));
 }
 
-// Used to serialize a struct into a payload with capnp.
-#[cfg(feature = "capnp")]
-pub trait CapnpSerialize {
-    fn to_capnp(&self) -> Vec<u8>;
+// Used to serialize a struct into a payload with protobuf.
+#[cfg(feature = "proto")]
+pub trait ProtoSerialize {
+    fn to_proto_bytes(&self) -> Vec<u8>;
 }
 
-// Used to deserialize a capnp payload into a struct.
-#[cfg(feature = "capnp")]
-pub trait CapnpDeserialize {
-    fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
+// Used to deserialize a protobuf payload into a struct.
+#[cfg(feature = "proto")]
+pub trait ProtoDeserialize {
+    fn from_proto_bytes(bytes: &[u8]) -> Result<Self, prost::DecodeError>
     where
         Self: Sized;
 }

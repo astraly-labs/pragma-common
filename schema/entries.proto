@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package pragma_common;
+
+enum InstrumentType {
+  SPOT = 0;
+  PERP = 1;
+}
+
+enum Chain {
+  STARKNET = 0;
+  SOLANA = 1;
+  SUI = 2;
+  APTOS = 3;
+  ETHEREUM = 4;
+  BASE = 5;
+  ARBITRUM = 6;
+  OPTIMISM = 7;
+  ZKSYNC = 8;
+  POLYGON = 9;
+  BNB = 10;
+  AVALANCHE = 11;
+  GNOSIS = 12;
+  WORLDCHAIN = 13;
+}
+
+enum OrderbookUpdateType {
+  UPDATE = 0;
+  SNAPSHOT = 1;
+}
+
+message UInt128 {
+  uint64 low = 1;
+  uint64 high = 2;
+}
+
+message Pair {
+  string base = 1;
+  string quote = 2;
+}
+
+message BidOrAsk {
+  double price = 1;
+  double quantity = 2;
+}
+
+message DepthLevel {
+  double percentage = 1;
+  double bid = 2;
+  double ask = 3;
+}
+
+message OrderbookData {
+  uint64 update_id = 1;
+  repeated BidOrAsk bids = 2;
+  repeated BidOrAsk asks = 3;
+}
+
+message PriceEntry {
+  string source = 1;
+  oneof chain_option {
+    bool no_chain = 2;
+    Chain chain = 3;
+  }
+  Pair pair = 4;
+  int64 timestamp_ms = 5;
+  UInt128 price = 6;
+  UInt128 volume = 7;
+  oneof expiration_option {
+    bool no_expiration = 8;
+    int64 expiration_timestamp = 9;
+  }
+}
+
+message OrderbookEntry {
+  string source = 1;
+  InstrumentType instrument_type = 2;
+  Pair pair = 3;
+  OrderbookUpdateType type = 4;
+  OrderbookData data = 5;
+  int64 timestamp_ms = 6;
+}
+
+message DepthEntry {
+  string source = 1;
+  InstrumentType instrument_type = 2;
+  Pair pair = 3;
+  DepthLevel depth = 4;
+  oneof chain_option {
+    bool no_chain = 5;
+    Chain chain = 6;
+  }
+  int64 timestamp_ms = 7;
+}
+
+message FundingRateEntry {
+  string source = 1;
+  Pair pair = 2;
+  double annualized_rate = 3;
+  int64 timestamp_ms = 4;
+}

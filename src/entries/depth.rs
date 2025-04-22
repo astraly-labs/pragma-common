@@ -1,9 +1,6 @@
-#[cfg(feature = "capnp")]
-use capnp::serialize;
-
-#[cfg(feature = "capnp")]
-use crate::schema_capnp;
 use crate::{instrument_type::InstrumentType, web3::Chain, Pair};
+#[cfg(feature = "proto")]
+use prost::Message;
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -26,121 +23,128 @@ pub struct DepthLevel {
     pub ask: f64,
 }
 
-#[cfg(feature = "capnp")]
-impl crate::CapnpSerialize for DepthEntry {
-    fn to_capnp(&self) -> Vec<u8> {
-        let mut message = capnp::message::Builder::new_default();
-        let mut builder = message.init_root::<schema_capnp::depth_entry::Builder>();
-
-        builder.set_source(&self.source);
-        builder.set_instrument_type(match self.instrument_type {
-            InstrumentType::Spot => schema_capnp::InstrumentType::Spot,
-            InstrumentType::Perp => schema_capnp::InstrumentType::Perp,
-        });
-
-        let mut pair = builder.reborrow().init_pair();
-        pair.set_base(&self.pair.base);
-        pair.set_quote(&self.pair.quote);
-
-        let mut depth_level = builder.reborrow().init_depth();
-        depth_level.set_percentage(self.depth.percentage);
-        depth_level.set_bid(self.depth.bid);
-        depth_level.set_ask(self.depth.ask);
-
-        // Set the chain union
-        let mut chain = builder.reborrow().init_chain();
-        match &self.chain {
-            Some(serialized_chain) => {
-                chain.set_chain(match serialized_chain {
-                    Chain::Starknet => schema_capnp::Chain::Starknet,
-                    Chain::Solana => schema_capnp::Chain::Solana,
-                    Chain::Sui => schema_capnp::Chain::Sui,
-                    Chain::Aptos => schema_capnp::Chain::Aptos,
-                    Chain::Ethereum => schema_capnp::Chain::Ethereum,
-                    Chain::Base => schema_capnp::Chain::Base,
-                    Chain::Arbitrum => schema_capnp::Chain::Arbitrum,
-                    Chain::Optimism => schema_capnp::Chain::Optimism,
-                    Chain::ZkSync => schema_capnp::Chain::Zksync,
-                    Chain::Polygon => schema_capnp::Chain::Polygon,
-                    Chain::Bnb => schema_capnp::Chain::Bnb,
-                    Chain::Avalanche => schema_capnp::Chain::Avalanche,
-                    Chain::Gnosis => schema_capnp::Chain::Gnosis,
-                    Chain::Worldchain => schema_capnp::Chain::Worldchain,
-                });
-            }
-            None => {
-                chain.set_no_chain(());
-            }
-        };
-
-        // Set timestamp_ms
-        builder.set_timestamp_ms(self.timestamp_ms);
-
-        let mut buffer = Vec::new();
-        serialize::write_message(&mut buffer, &message).unwrap();
-        buffer
-    }
-}
-
-#[cfg(feature = "capnp")]
-impl crate::CapnpDeserialize for DepthEntry {
-    fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
-    where
-        Self: Sized,
-    {
-        let message_reader = serialize::read_message(bytes, capnp::message::ReaderOptions::new())?;
-        let reader = message_reader.get_root::<schema_capnp::depth_entry::Reader>()?;
-
-        let source = reader.get_source()?.to_string()?;
-        let instrument_type = match reader.get_instrument_type()? {
-            schema_capnp::InstrumentType::Spot => InstrumentType::Spot,
-            schema_capnp::InstrumentType::Perp => InstrumentType::Perp,
-        };
-
-        let pair_reader = reader.get_pair()?;
-        let pair = Pair {
-            base: pair_reader.get_base()?.to_string()?,
-            quote: pair_reader.get_quote()?.to_string()?,
-        };
-
-        let depth_reader = reader.get_depth()?;
-        let depth = DepthLevel {
-            percentage: depth_reader.get_percentage(),
-            bid: depth_reader.get_bid(),
-            ask: depth_reader.get_ask(),
-        };
-
-        // Extract timestamp_ms
-        let timestamp_ms = reader.get_timestamp_ms();
-
-        // Extract chain from the union
-        let chain = match reader.get_chain().which()? {
-            schema_capnp::depth_entry::chain::NoChain(()) => None,
-            schema_capnp::depth_entry::chain::Chain(chain_reader) => Some(match chain_reader? {
-                schema_capnp::Chain::Starknet => Chain::Starknet,
-                schema_capnp::Chain::Solana => Chain::Solana,
-                schema_capnp::Chain::Sui => Chain::Sui,
-                schema_capnp::Chain::Aptos => Chain::Aptos,
-                schema_capnp::Chain::Ethereum => Chain::Ethereum,
-                schema_capnp::Chain::Base => Chain::Base,
-                schema_capnp::Chain::Arbitrum => Chain::Arbitrum,
-                schema_capnp::Chain::Optimism => Chain::Optimism,
-                schema_capnp::Chain::Zksync => Chain::ZkSync,
-                schema_capnp::Chain::Polygon => Chain::Polygon,
-                schema_capnp::Chain::Bnb => Chain::Bnb,
-                schema_capnp::Chain::Avalanche => Chain::Avalanche,
-                schema_capnp::Chain::Gnosis => Chain::Gnosis,
-                schema_capnp::Chain::Worldchain => Chain::Worldchain,
+#[cfg(feature = "proto")]
+impl DepthEntry {
+    fn to_proto(&self) -> crate::schema::DepthEntry {
+        crate::schema::DepthEntry {
+            source: self.source.clone(),
+            instrument_type: match self.instrument_type {
+                InstrumentType::Spot => crate::schema::InstrumentType::Spot,
+                InstrumentType::Perp => crate::schema::InstrumentType::Perp,
+            } as i32,
+            pair: Some(crate::schema::Pair {
+                base: self.pair.base.clone(),
+                quote: self.pair.quote.clone(),
             }),
+            depth: Some(crate::schema::DepthLevel {
+                percentage: self.depth.percentage,
+                bid: self.depth.bid,
+                ask: self.depth.ask,
+            }),
+            chain_option: Some(match &self.chain {
+                Some(chain) => crate::schema::depth_entry::ChainOption::Chain(match chain {
+                    Chain::Starknet => crate::schema::Chain::Starknet as i32,
+                    Chain::Solana => crate::schema::Chain::Solana as i32,
+                    Chain::Sui => crate::schema::Chain::Sui as i32,
+                    Chain::Aptos => crate::schema::Chain::Aptos as i32,
+                    Chain::Ethereum => crate::schema::Chain::Ethereum as i32,
+                    Chain::Base => crate::schema::Chain::Base as i32,
+                    Chain::Arbitrum => crate::schema::Chain::Arbitrum as i32,
+                    Chain::Optimism => crate::schema::Chain::Optimism as i32,
+                    Chain::ZkSync => crate::schema::Chain::Zksync as i32,
+                    Chain::Polygon => crate::schema::Chain::Polygon as i32,
+                    Chain::Bnb => crate::schema::Chain::Bnb as i32,
+                    Chain::Avalanche => crate::schema::Chain::Avalanche as i32,
+                    Chain::Gnosis => crate::schema::Chain::Gnosis as i32,
+                    Chain::Worldchain => crate::schema::Chain::Worldchain as i32,
+                }),
+                None => crate::schema::depth_entry::ChainOption::NoChain(true),
+            }),
+            timestamp_ms: self.timestamp_ms,
+        }
+    }
+
+    fn from_proto(proto: crate::schema::DepthEntry) -> Result<Self, prost::DecodeError> {
+        let instrument_type = match proto.instrument_type() {
+            crate::schema::InstrumentType::Spot => InstrumentType::Spot,
+            crate::schema::InstrumentType::Perp => InstrumentType::Perp,
+        };
+
+        let pair = proto
+            .pair
+            .ok_or_else(|| prost::DecodeError::new("Missing pair field in DepthEntry"))?;
+        let pair = Pair {
+            base: pair.base,
+            quote: pair.quote,
+        };
+
+        let depth = proto
+            .depth
+            .ok_or_else(|| prost::DecodeError::new("Missing depth field in DepthEntry"))?;
+        let depth = DepthLevel {
+            percentage: depth.percentage,
+            bid: depth.bid,
+            ask: depth.ask,
+        };
+
+        let chain = match proto.chain_option {
+            Some(crate::schema::depth_entry::ChainOption::NoChain(_)) => None,
+            Some(crate::schema::depth_entry::ChainOption::Chain(chain)) => Some(match chain {
+                x if x == crate::schema::Chain::Starknet as i32 => Chain::Starknet,
+                x if x == crate::schema::Chain::Solana as i32 => Chain::Solana,
+                x if x == crate::schema::Chain::Sui as i32 => Chain::Sui,
+                x if x == crate::schema::Chain::Aptos as i32 => Chain::Aptos,
+                x if x == crate::schema::Chain::Ethereum as i32 => Chain::Ethereum,
+                x if x == crate::schema::Chain::Base as i32 => Chain::Base,
+                x if x == crate::schema::Chain::Arbitrum as i32 => Chain::Arbitrum,
+                x if x == crate::schema::Chain::Optimism as i32 => Chain::Optimism,
+                x if x == crate::schema::Chain::Zksync as i32 => Chain::ZkSync,
+                x if x == crate::schema::Chain::Polygon as i32 => Chain::Polygon,
+                x if x == crate::schema::Chain::Bnb as i32 => Chain::Bnb,
+                x if x == crate::schema::Chain::Avalanche as i32 => Chain::Avalanche,
+                x if x == crate::schema::Chain::Gnosis as i32 => Chain::Gnosis,
+                x if x == crate::schema::Chain::Worldchain as i32 => Chain::Worldchain,
+                _ => {
+                    return Err(prost::DecodeError::new(format!(
+                        "Unknown chain value: {}",
+                        chain
+                    )))
+                }
+            }),
+            None => {
+                return Err(prost::DecodeError::new(
+                    "Missing chain_option field in DepthEntry",
+                ))
+            }
         };
 
         Ok(DepthEntry {
-            source,
+            source: proto.source,
             instrument_type,
             pair,
             depth,
-            timestamp_ms,
+            timestamp_ms: proto.timestamp_ms,
             chain,
         })
+    }
+}
+
+#[cfg(feature = "proto")]
+impl crate::ProtoSerialize for DepthEntry {
+    fn to_proto_bytes(&self) -> Vec<u8> {
+        let proto = self.to_proto();
+        let mut buf = Vec::new();
+        proto
+            .encode(&mut buf)
+            .expect("Failed to encode DepthEntry to protobuf");
+        buf
+    }
+}
+
+#[cfg(feature = "proto")]
+impl crate::ProtoDeserialize for DepthEntry {
+    fn from_proto_bytes(bytes: &[u8]) -> Result<Self, prost::DecodeError> {
+        let proto = crate::schema::DepthEntry::decode(bytes)?;
+        Self::from_proto(proto)
     }
 }
