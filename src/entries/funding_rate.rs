@@ -1,9 +1,9 @@
-#[cfg(feature = "capnp")]
-use capnp::serialize;
+#[cfg(feature = "proto")]
+use prost::Message;
 
-#[cfg(feature = "capnp")]
-use crate::schema_capnp;
 use crate::Pair;
+#[cfg(feature = "proto")]
+use crate::{ProtoDeserialize, ProtoSerialize};
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -15,59 +15,50 @@ pub struct FundingRateEntry {
     pub timestamp_ms: i64,
 }
 
-#[cfg(feature = "capnp")]
-impl crate::CapnpSerialize for FundingRateEntry {
-    fn to_capnp(&self) -> Vec<u8> {
-        let mut message = capnp::message::Builder::new_default();
-        let mut builder = message.init_root::<schema_capnp::funding_rate_entry::Builder>();
+#[cfg(feature = "proto")]
+impl FundingRateEntry {
+    fn to_proto(&self) -> crate::schema::FundingRateEntry {
+        crate::schema::FundingRateEntry {
+            source: self.source.clone(),
+            pair: Some(crate::schema::Pair {
+                base: self.pair.base.clone(),
+                quote: self.pair.quote.clone(),
+            }),
+            annualized_rate: self.annualized_rate,
+            timestamp_ms: self.timestamp_ms,
+        }
+    }
 
-        // Set source
-        builder.set_source(&self.source);
-
-        // Set pair
-        let mut pair = builder.reborrow().init_pair();
-        pair.set_base(&self.pair.base);
-        pair.set_quote(&self.pair.quote);
-
-        // Set funding rate
-        builder.set_annualized_rate(self.annualized_rate);
-
-        // Set timestamp_ms
-        builder.set_timestamp_ms(self.timestamp_ms);
-
-        let mut buffer = Vec::new();
-        serialize::write_message(&mut buffer, &message).unwrap();
-        buffer
+    fn from_proto(proto: crate::schema::FundingRateEntry) -> Result<Self, prost::DecodeError> {
+        let pair = proto
+            .pair
+            .ok_or_else(|| prost::DecodeError::new("Missing pair field in FundingRateEntry"))?;
+        Ok(FundingRateEntry {
+            source: proto.source,
+            pair: Pair {
+                base: pair.base,
+                quote: pair.quote,
+            },
+            annualized_rate: proto.annualized_rate,
+            timestamp_ms: proto.timestamp_ms,
+        })
     }
 }
 
-#[cfg(feature = "capnp")]
-impl crate::CapnpDeserialize for FundingRateEntry {
-    fn from_capnp(bytes: &[u8]) -> Result<Self, capnp::Error>
-    where
-        Self: Sized,
-    {
-        let message_reader = serialize::read_message(bytes, capnp::message::ReaderOptions::new())?;
-        let reader = message_reader.get_root::<schema_capnp::funding_rate_entry::Reader>()?;
+#[cfg(feature = "proto")]
+impl ProtoSerialize for FundingRateEntry {
+    fn to_proto_bytes(&self) -> Vec<u8> {
+        let proto = self.to_proto();
+        let mut buf = Vec::new();
+        proto.encode_raw(&mut buf);
+        buf
+    }
+}
 
-        let source = reader.get_source()?.to_string()?;
-
-        let annualized_rate = reader.get_annualized_rate();
-
-        let pair_reader = reader.get_pair()?;
-        let pair = Pair {
-            base: pair_reader.get_base()?.to_string()?,
-            quote: pair_reader.get_quote()?.to_string()?,
-        };
-
-        // Extract timestamp_ms
-        let timestamp_ms = reader.get_timestamp_ms();
-
-        Ok(FundingRateEntry {
-            source,
-            pair,
-            annualized_rate,
-            timestamp_ms,
-        })
+#[cfg(feature = "proto")]
+impl ProtoDeserialize for FundingRateEntry {
+    fn from_proto_bytes(bytes: &[u8]) -> Result<Self, prost::DecodeError> {
+        let proto = crate::schema::FundingRateEntry::decode(bytes)?;
+        Self::from_proto(proto)
     }
 }

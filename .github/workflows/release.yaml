@@ -104,21 +104,19 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v4
 
-      - name: Install Cap'n Proto (Ubuntu)
+      - name: Install Protocol Buffers (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y capnproto libcapnp-dev
+          sudo apt-get install -y protobuf-compiler
 
-      - name: Install Cap'n Proto (macOS)
+      - name: Install Protocol Buffers (macOS)
         if: matrix.os == 'macos-latest'
-        run: |
-          brew install capnp
+        run: brew install protobuf
 
-      - name: Install Cap'n Proto (Windows)
+      - name: Install Protocol Buffers (Windows)
         if: matrix.os == 'windows-latest'
-        run: |
-          choco install -y capnproto
+        run: choco install protoc
         shell: powershell
 
       - name: "Install Rust stable toolchain"
@@ -155,13 +153,13 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v4
 
+      - name: Install Protocol Buffers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
       - name: "Install Rust stable toolchain"
         uses: dtolnay/rust-toolchain@stable
-
-      - name: "Install Cap'n Proto"
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get install -y capnproto libcapnp-dev
 
       - name: "Login to crates.io"
         run: cargo login $CRATES_IO_API_TOKEN

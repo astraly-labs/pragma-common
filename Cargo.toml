@@ -12,7 +12,7 @@ license = "MIT"
 
 [features]
 serde = ["dep:serde"]
-capnp = ["dep:capnp"]
+proto = ["dep:prost", "dep:anyhow"]
 utoipa = ["dep:utoipa"]
 task-group = ["dep:tokio", "dep:futures"]
 telemetry = [
@@ -42,7 +42,7 @@ starknet = [
 ]
 
 [build-dependencies]
-capnpc = { version = "0.21.0" }
+prost-build = "0.13.5"
 
 [dependencies]
 thiserror = "2.0.12"
@@ -64,8 +64,8 @@ serde_json = { version = "1.0", optional = true }
 starknet = { version = "0.14", optional = true }
 starknet-crypto = { version = "0.7.4", optional = true }
 
-# feature[capnp]
-capnp = { version = "0.21.0", optional = true }
+# feature[proto]
+prost = { version = "0.13", optional = true }
 
 # feature[utoipa]
 utoipa = { version = "5.0.0", features = [

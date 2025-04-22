@@ -1,4 +1,4 @@
-#[cfg(feature = "capnp")]
+#[cfg(feature = "proto")]
 use pragma_common::{
     entries::depth::{DepthEntry, DepthLevel},
     entries::funding_rate::FundingRateEntry,
@@ -6,12 +6,12 @@ use pragma_common::{
     entries::price::PriceEntry,
     instrument_type::InstrumentType,
     web3::Chain,
-    CapnpDeserialize, CapnpSerialize, Pair,
+    Pair, ProtoDeserialize, ProtoSerialize,
 };
 
-#[cfg(feature = "capnp")]
+#[cfg(feature = "proto")]
 #[test]
-fn test_price_entry_capnp() {
+fn test_price_entry_proto() {
     let x = PriceEntry {
         source: "TEST".to_string(),
         chain: Some(Chain::Ethereum),
@@ -21,15 +21,15 @@ fn test_price_entry_capnp() {
         volume: 0,
         expiration_timestamp: Some(0),
     };
-    let payload = x.to_capnp();
-    let entry: PriceEntry = PriceEntry::from_capnp(&payload).unwrap();
+    let payload = x.to_proto_bytes();
+    let entry: PriceEntry = PriceEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(entry, x);
     assert_eq!(entry.instrument_type(), InstrumentType::Perp);
 }
 
-#[cfg(feature = "capnp")]
+#[cfg(feature = "proto")]
 #[test]
-fn test_depth_entry_capnp() {
+fn test_depth_entry_proto() {
     let x = DepthEntry {
         depth: DepthLevel {
             percentage: 0.02,
@@ -42,14 +42,14 @@ fn test_depth_entry_capnp() {
         chain: Some(Chain::Gnosis),
         timestamp_ms: 145567,
     };
-    let payload = x.to_capnp();
-    let depth: DepthEntry = DepthEntry::from_capnp(&payload).unwrap();
+    let payload = x.to_proto_bytes();
+    let depth: DepthEntry = DepthEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(depth, x);
 }
 
-#[cfg(feature = "capnp")]
+#[cfg(feature = "proto")]
 #[test]
-fn test_orderbook_update_capnp() {
+fn test_orderbook_update_proto() {
     let x = OrderbookEntry {
         source: "TEST".to_string(),
         instrument_type: InstrumentType::Spot,
@@ -62,21 +62,21 @@ fn test_orderbook_update_capnp() {
         },
         timestamp_ms: 145567,
     };
-    let payload = x.to_capnp();
-    let orderbook_update: OrderbookEntry = OrderbookEntry::from_capnp(&payload).unwrap();
+    let payload = x.to_proto_bytes();
+    let orderbook_update: OrderbookEntry = OrderbookEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(orderbook_update, x);
 }
 
-#[cfg(feature = "capnp")]
+#[cfg(feature = "proto")]
 #[test]
-fn test_annualized_rate_capnp() {
+fn test_annualized_rate_proto() {
     let x = FundingRateEntry {
         source: "TEST".to_string(),
         pair: Pair::from_currencies("BTC", "USD"),
         annualized_rate: 42.42,
         timestamp_ms: 145567,
     };
-    let payload = x.to_capnp();
-    let entry: FundingRateEntry = FundingRateEntry::from_capnp(&payload).unwrap();
+    let payload = x.to_proto_bytes();
+    let entry: FundingRateEntry = FundingRateEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(entry, x);
 }
