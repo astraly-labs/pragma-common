@@ -84,10 +84,9 @@ message FundingRateEntry {
 
 message OpenInterestEntry {
   string source = 1;
-  InstrumentType instrumentType = 2;
-  Pair pair = 3;
-  double openInterest = 4;
-  int64 timestampMs = 5;
+  Pair pair = 2;
+  double openInterest = 3;
+  int64 timestampMs = 4;
 }
 
 message VolumeEntry {

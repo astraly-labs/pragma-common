@@ -67,7 +67,6 @@ fn test_annualized_rate_proto() {
 fn test_open_interest_entry_proto() {
     let x = OpenInterestEntry {
         source: "TEST".to_string(),
-        instrument_type: InstrumentType::Perp,
         pair: Pair::from_currencies("BTC", "USD"),
         open_interest: 1000.0,
         timestamp_ms: 145567,
