@@ -1,9 +1,10 @@
 #[cfg(feature = "proto")]
 use pragma_common::{
-    entries::depth::{DepthEntry, DepthLevel},
     entries::funding_rate::FundingRateEntry,
+    entries::open_interest::OpenInterestEntry,
     entries::orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType},
     entries::price::PriceEntry,
+    entries::volume::VolumeEntry,
     instrument_type::InstrumentType,
     web3::Chain,
     Pair, ProtoDeserialize, ProtoSerialize,
@@ -25,26 +26,6 @@ fn test_price_entry_proto() {
     let entry: PriceEntry = PriceEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(entry, x);
     assert_eq!(entry.instrument_type(), InstrumentType::Perp);
-}
-
-#[cfg(feature = "proto")]
-#[test]
-fn test_depth_entry_proto() {
-    let x = DepthEntry {
-        depth: DepthLevel {
-            percentage: 0.02,
-            bid: 42.69,
-            ask: 42.69,
-        },
-        instrument_type: InstrumentType::Spot,
-        pair: Pair::from_currencies("BTC", "USD"),
-        source: "TEST".to_string(),
-        chain: Some(Chain::Gnosis),
-        timestamp_ms: 145567,
-    };
-    let payload = x.to_proto_bytes();
-    let depth: DepthEntry = DepthEntry::from_proto_bytes(&payload).unwrap();
-    assert_eq!(depth, x);
 }
 
 #[cfg(feature = "proto")]
@@ -78,5 +59,35 @@ fn test_annualized_rate_proto() {
     };
     let payload = x.to_proto_bytes();
     let entry: FundingRateEntry = FundingRateEntry::from_proto_bytes(&payload).unwrap();
+    assert_eq!(entry, x);
+}
+
+#[cfg(feature = "proto")]
+#[test]
+fn test_open_interest_entry_proto() {
+    let x = OpenInterestEntry {
+        source: "TEST".to_string(),
+        instrument_type: InstrumentType::Perp,
+        pair: Pair::from_currencies("BTC", "USD"),
+        open_interest: 1000.0,
+        timestamp_ms: 145567,
+    };
+    let payload = x.to_proto_bytes();
+    let entry: OpenInterestEntry = OpenInterestEntry::from_proto_bytes(&payload).unwrap();
+    assert_eq!(entry, x);
+}
+
+#[cfg(feature = "proto")]
+#[test]
+fn test_volume_entry_proto() {
+    let x = VolumeEntry {
+        source: "TEST".to_string(),
+        instrument_type: InstrumentType::Spot,
+        pair: Pair::from_currencies("ETH", "USD"),
+        volume_daily: 5000.0,
+        timestamp_ms: 145567,
+    };
+    let payload = x.to_proto_bytes();
+    let entry: VolumeEntry = VolumeEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(entry, x);
 }
