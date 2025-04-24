@@ -44,12 +44,6 @@ message BidOrAsk {
   double quantity = 2;
 }
 
-message DepthLevel {
-  double percentage = 1;
-  double bid = 2;
-  double ask = 3;
-}
-
 message OrderbookData {
   uint64 update_id = 1;
   repeated BidOrAsk bids = 2;
@@ -58,44 +52,48 @@ message OrderbookData {
 
 message PriceEntry {
   string source = 1;
-  oneof chain_option {
-    bool no_chain = 2;
+  oneof chainOption {
+    bool noChain = 2;
     Chain chain = 3;
   }
   Pair pair = 4;
-  int64 timestamp_ms = 5;
+  int64 timestampMs = 5;
   UInt128 price = 6;
   UInt128 volume = 7;
-  oneof expiration_option {
-    bool no_expiration = 8;
-    int64 expiration_timestamp = 9;
+  oneof expirationOption {
+    bool noExpiration = 8;
+    int64 expirationTimestamp = 9;
   }
 }
 
 message OrderbookEntry {
   string source = 1;
-  InstrumentType instrument_type = 2;
+  InstrumentType instrumentType = 2;
   Pair pair = 3;
   OrderbookUpdateType type = 4;
   OrderbookData data = 5;
-  int64 timestamp_ms = 6;
-}
-
-message DepthEntry {
-  string source = 1;
-  InstrumentType instrument_type = 2;
-  Pair pair = 3;
-  DepthLevel depth = 4;
-  oneof chain_option {
-    bool no_chain = 5;
-    Chain chain = 6;
-  }
-  int64 timestamp_ms = 7;
+  int64 timestampMs = 6;
 }
 
 message FundingRateEntry {
   string source = 1;
   Pair pair = 2;
-  double annualized_rate = 3;
-  int64 timestamp_ms = 4;
+  double annualizedRate = 3;
+  int64 timestampMs = 4;
+}
+
+message OpenInterestEntry {
+  string source = 1;
+  InstrumentType instrumentType = 2;
+  Pair pair = 3;
+  double openInterest = 4;
+  int64 timestampMs = 5;
+}
+
+message VolumeEntry {
+  string source = 1;
+  InstrumentType instrumentType = 2;
+  Pair pair = 3;
+  double volumeDaily = 4;
+  int64 timestampMs = 5;
 }
