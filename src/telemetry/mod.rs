@@ -36,7 +36,7 @@ pub fn init_telemetry(
 ) -> Result<(), TelemetryError> {
     let tracing_subscriber = tracing_subscriber::registry().with(
         EnvFilter::builder()
-            .with_default_directive(LevelFilter::INFO.into())
+            .with_default_directive(LevelFilter::DEBUG.into())
             .from_env_lossy(),
     );
 
