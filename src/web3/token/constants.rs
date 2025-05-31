@@ -220,6 +220,10 @@ pub fn USDT() -> Token {
                 Chain::Aptos,
                 "0x9770fa9c725cbd97eb50b2be5f7416efdfd1f1554beb0750d4dae4c64e860da3::fa_to_coin_wrapper::WrappedUSDT".to_string(),
             ),
+            (
+                Chain::Starknet,
+                "0x068F5c6a61780768455de69077E07e89787839bf8166dEcfBf92B645209c0fB8".to_string(),
+            )
         ])),
     }).clone()
 }
@@ -292,10 +296,17 @@ pub fn BTC() -> Token {
             name: "Bitcoin".to_string(),
             ticker: "BTC".to_string(),
             decimals: 8,
-            addresses: Some(BTreeMap::from([(
-                Chain::Ethereum,
-                "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599".to_string(),
-            )])),
+            addresses: Some(BTreeMap::from([
+                (
+                    Chain::Ethereum,
+                    "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599".to_string(),
+                ),
+                (
+                    Chain::Starknet,
+                    "0x03Fe2b97C1Fd336E750087D68B9b867997Fd64a2661fF3ca5A7C771641e8e7AC"
+                        .to_string(),
+                ),
+            ])),
         })
         .clone()
 }
