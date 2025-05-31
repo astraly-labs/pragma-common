@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.3.4"
+version = "0.3.5"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -33,14 +33,15 @@ services = [
   "dep:anyhow",
 ]
 starknet = [
+  "dep:anyhow",
   "dep:starknet",
   "dep:serde",
   "dep:starknet-crypto",
   "dep:cainome",
   "dep:indexmap",
   "dep:serde_json",
-  "dep:num-bigint", 
-  "dep:rust_decimal"
+  "dep:num-bigint",
+  "dep:rust_decimal",
 ]
 
 [build-dependencies]
@@ -60,12 +61,12 @@ tokio-util = { version = "0.7", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
 # feature[starknet]
-cainome = { version = "0.5.0", features = ["abigen-rs"], optional = true }
+cainome = { version = "0.7", features = ["abigen-rs"], optional = true }
 indexmap = { version = "2.2", optional = true }
-num-bigint = { version =  "0.4.6", features = ["serde"] , optional = true }
+num-bigint = { version = "0.4.6", features = ["serde"], optional = true }
 rust_decimal = { version = "1.37.1", features = ["serde"], optional = true }
 serde_json = { version = "1.0", optional = true }
-starknet = { version = "0.14", optional = true }
+starknet = { version = "0.15", optional = true }
 starknet-crypto = { version = "0.7.4", optional = true }
 
 

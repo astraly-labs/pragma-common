@@ -1,8 +1,9 @@
+use std::str::FromStr;
+
+use anyhow::Context;
 use num_bigint::BigUint;
-use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use starknet::core::types::Felt;
-use std::str::FromStr;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct StarknetU256 {
@@ -99,12 +100,14 @@ impl From<&StarknetU256> for BigUint {
     }
 }
 
-impl From<StarknetU256> for Decimal {
-    fn from(value: StarknetU256) -> Self {
+impl TryFrom<StarknetU256> for rust_decimal::Decimal {
+    type Error = anyhow::Error;
+
+    fn try_from(value: StarknetU256) -> anyhow::Result<rust_decimal::Decimal> {
         let biguint_representation: BigUint = value.into();
-        let scaled_decimal_value = Decimal::from_str(&biguint_representation.to_string())
-            .expect("BigUint::to_string should always yield a valid number for Decimal parsing");
-        scaled_decimal_value
+
+        rust_decimal::Decimal::from_str(&biguint_representation.to_string())
+            .context("Converting to rust_decimal")
     }
 }
 
