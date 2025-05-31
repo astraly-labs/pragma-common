@@ -19,6 +19,7 @@ static USDC_LOCK: OnceLock<Token> = OnceLock::new();
 static AAVE_LOCK: OnceLock<Token> = OnceLock::new();
 static BTC_LOCK: OnceLock<Token> = OnceLock::new();
 static JLP_LOCK: OnceLock<Token> = OnceLock::new();
+static WSTETH_LOCK: OnceLock<Token> = OnceLock::new();
 
 #[allow(non_snake_case)]
 #[must_use]
@@ -323,6 +324,29 @@ pub fn JLP() -> Token {
                 Chain::Solana,
                 "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4".to_string(),
             )])),
+        })
+        .clone()
+}
+
+#[allow(non_snake_case)]
+#[must_use]
+pub fn WSTETH() -> Token {
+    WSTETH_LOCK
+        .get_or_init(|| Token {
+            name: "Wrapped liquid staked Ether 2.0".to_string(),
+            ticker: "wstETH".to_string(),
+            decimals: 18,
+            addresses: Some(BTreeMap::from([
+                (
+                    Chain::Starknet,
+                    "0x042b8F0484674cA266AC5D08e4aC6A3fE65bd3129795DEF2dCA5c34ecC5F96d2"
+                        .to_string(),
+                ),
+                (
+                    Chain::Ethereum,
+                    "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0".to_string(),
+                ),
+            ])),
         })
         .clone()
 }
