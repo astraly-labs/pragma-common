@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.3.7"
+version = "0.3.8"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -66,7 +66,7 @@ indexmap = { version = "2.2", optional = true }
 num-bigint = { version = "0.4.6", features = ["serde"], optional = true }
 rust_decimal = { version = "1.37.1", features = ["serde"], optional = true }
 serde_json = { version = "1.0", optional = true }
-starknet = { version = "0.15", optional = true }
+starknet = { version = "0.14", optional = true }
 starknet-crypto = { version = "0.7.4", optional = true }
 
 
