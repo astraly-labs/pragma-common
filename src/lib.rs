@@ -12,6 +12,9 @@ pub mod starknet;
 #[cfg(feature = "telemetry")]
 pub mod telemetry;
 
+// Trading types
+pub mod trading;
+
 // Pair
 pub mod pair;
 pub use pair::Pair;
