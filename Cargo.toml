@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.3.10"
+version = "0.3.11"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -33,6 +33,7 @@ services = [
   "dep:anyhow",
 ]
 starknet = [
+  "dep:async-trait",
   "dep:anyhow",
   "dep:starknet",
   "dep:serde",
@@ -42,6 +43,7 @@ starknet = [
   "dep:serde_json",
   "dep:num-bigint",
   "dep:rust_decimal",
+  "dep:tokio",
 ]
 
 [build-dependencies]
