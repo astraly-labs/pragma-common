@@ -48,8 +48,8 @@ starknet = [
 prost-build = "0.13.5"
 
 [dependencies]
-thiserror = "2.0.12"
 strum = { version = "0.27.1", features = ["derive"] }
+thiserror = "2.0.12"
 
 # feature[services] + [task-group]
 anyhow = { version = "1.0.91", optional = true }
