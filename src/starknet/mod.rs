@@ -1,5 +1,6 @@
 pub mod conversion;
 pub mod errors;
+pub mod fallback_provider;
 pub mod network;
 pub mod typed_data;
 pub mod u256;
