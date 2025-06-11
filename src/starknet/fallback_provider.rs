@@ -148,6 +148,13 @@ impl FallbackProvider {
                             last_error = Some(err);
                             continue;
                         }
+                        _ if err
+                            .to_string()
+                            .contains("Unable to complete request at this time.") =>
+                        {
+                            last_error = Some(err);
+                            continue;
+                        }
                         // Else we just bubble up the error
                         _ => {
                             return Err(err);
