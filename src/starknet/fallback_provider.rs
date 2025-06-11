@@ -142,7 +142,17 @@ impl FallbackProvider {
                     return Ok(result);
                 }
                 Err(err) => {
-                    last_error = Some(err);
+                    match err {
+                        // If we're rate limited, we try a new provider
+                        ProviderError::RateLimited => {
+                            last_error = Some(err);
+                            continue;
+                        }
+                        // Else we just bubble up the error
+                        _ => {
+                            return Err(err);
+                        }
+                    }
                     // Continue to next provider
                 }
             }
