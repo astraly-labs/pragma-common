@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use async_trait::async_trait;
 use starknet::{
@@ -20,6 +21,7 @@ use starknet::{
     },
 };
 use tokio::sync::RwLock;
+use tokio::time::{sleep, timeout};
 
 /// A provider that automatically falls back to other RPC endpoints when the primary fails.
 ///
@@ -110,6 +112,72 @@ impl FallbackProvider {
     /// Resets to use the primary provider.
     pub async fn reset_to_primary(&self) {
         *self.current_index.write().await = 0;
+    }
+
+    pub async fn wait_for_accepted_on_l1<H>(
+        &self,
+        transaction_hash: H,
+        check_interval: Option<Duration>,
+        timeout_duration: Option<Duration>,
+    ) -> Result<(), ProviderError>
+    where
+        H: AsRef<Felt> + Send + Sync + Copy,
+    {
+        let check_interval = check_interval.unwrap_or(Duration::from_secs(10));
+        let timeout_duration = timeout_duration.unwrap_or(Duration::from_secs(30 * 60));
+
+        let tx_hash = *transaction_hash.as_ref();
+
+        let wait_future = async {
+            loop {
+                match self.get_transaction_status(tx_hash).await {
+                    Ok(status) => {
+                        match status {
+                            TransactionStatus::AcceptedOnL1(_) => {
+                                return Ok(());
+                            }
+                            TransactionStatus::Rejected => {
+                                return Err(ProviderError::StarknetError(
+                                    starknet::core::types::StarknetError::UnexpectedError(
+                                        format!("Transaction {} was rejected", format!("{:#x}", tx_hash))
+                                    )
+                                ));
+                            }
+                            TransactionStatus::Received
+                            | TransactionStatus::AcceptedOnL2(_) => {
+                                sleep(check_interval).await;
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        match e {
+                            ProviderError::RateLimited => {
+                                sleep(check_interval).await;
+                            }
+                            _ if e
+                                .to_string()
+                                .contains("Unable to complete request at this time.") =>
+                            {
+                                sleep(check_interval).await;
+                            }
+                            _ => return Err(e),
+                        }
+                    }
+                }
+            }
+        };
+
+        timeout(timeout_duration, wait_future).await.map_err(|_| {
+            ProviderError::StarknetError(
+                starknet::core::types::StarknetError::UnexpectedError(
+                    format!(
+                        "Timeout waiting for transaction {} to be accepted on L1 after {:?}",
+                        format!("{:#x}", tx_hash),
+                        timeout_duration
+                    )
+                )
+            )
+        })?
     }
 
     async fn execute_with_fallback<T, F>(&self, mut f: F) -> Result<T, ProviderError>
