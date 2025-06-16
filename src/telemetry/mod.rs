@@ -70,9 +70,19 @@ pub fn init_telemetry(
 }
 
 fn init_tracer_provider(app_name: &str, collection_endpoint: &str) -> Tracer {
+    // Set a custom error handler to log OpenTelemetry errors with timestamps
+    global::set_error_handler(|error| {
+        tracing::error!(error = %error, "OpenTelemetry error occurred");
+    })
+    .expect("Failed to set error handler");
+
     let provider = opentelemetry_otlp::new_pipeline()
         .tracing()
-        .with_batch_config(BatchConfigBuilder::default().build())
+        .with_batch_config(
+            BatchConfigBuilder::default()
+                .with_max_queue_size(4096)
+                .build(),
+        )
         .with_trace_config(
             Config::default().with_resource(Resource::new(vec![KeyValue::new(
                 SERVICE_NAME,
