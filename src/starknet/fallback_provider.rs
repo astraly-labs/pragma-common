@@ -23,6 +23,15 @@ use starknet::{
 use tokio::sync::RwLock;
 use tokio::time::{sleep, timeout};
 
+/// Target status for waiting on transaction finality
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WaitForTarget {
+    /// Wait for transaction to be accepted on L2
+    AcceptedOnL2,
+    /// Wait for transaction to be accepted on L1
+    AcceptedOnL1,
+}
+
 /// A provider that automatically falls back to other RPC endpoints when the primary fails.
 ///
 /// # Example
@@ -114,9 +123,11 @@ impl FallbackProvider {
         *self.current_index.write().await = 0;
     }
 
-    pub async fn wait_for_accepted_on_l1<H>(
+    /// Waits for a transaction to reach the specified target status.
+    pub async fn wait_for<H>(
         &self,
         transaction_hash: H,
+        target: WaitForTarget,
         check_interval: Option<Duration>,
         timeout_duration: Option<Duration>,
     ) -> Result<(), ProviderError>
@@ -134,49 +145,55 @@ impl FallbackProvider {
                     Ok(status) => {
                         match status {
                             TransactionStatus::AcceptedOnL1(_) => {
+                                // L1 acceptance means L2 is also satisfied
                                 return Ok(());
+                            }
+                            TransactionStatus::AcceptedOnL2(_) => {
+                                // If we're waiting for L2, we're done
+                                // If we're waiting for L1, continue polling
+                                match target {
+                                    WaitForTarget::AcceptedOnL2 => return Ok(()),
+                                    WaitForTarget::AcceptedOnL1 => {
+                                        sleep(check_interval).await;
+                                    }
+                                }
                             }
                             TransactionStatus::Rejected => {
                                 return Err(ProviderError::StarknetError(
-                                    starknet::core::types::StarknetError::UnexpectedError(
-                                        format!("Transaction {} was rejected", format!("{:#x}", tx_hash))
-                                    )
+                                    starknet::core::types::StarknetError::UnexpectedError(format!(
+                                        "Transaction {:#x} was rejected",
+                                        tx_hash
+                                    )),
                                 ));
                             }
-                            TransactionStatus::Received
-                            | TransactionStatus::AcceptedOnL2(_) => {
+                            TransactionStatus::Received => {
                                 sleep(check_interval).await;
                             }
                         }
                     }
-                    Err(e) => {
-                        match e {
-                            ProviderError::RateLimited => {
-                                sleep(check_interval).await;
-                            }
-                            _ if e
-                                .to_string()
-                                .contains("Unable to complete request at this time.") =>
-                            {
-                                sleep(check_interval).await;
-                            }
-                            _ => return Err(e),
+                    Err(e) => match e {
+                        ProviderError::RateLimited => {
+                            sleep(check_interval).await;
                         }
-                    }
+                        _ if e
+                            .to_string()
+                            .contains("Unable to complete request at this time.") =>
+                        {
+                            sleep(check_interval).await;
+                        }
+                        _ => return Err(e),
+                    },
                 }
             }
         };
 
         timeout(timeout_duration, wait_future).await.map_err(|_| {
-            ProviderError::StarknetError(
-                starknet::core::types::StarknetError::UnexpectedError(
-                    format!(
-                        "Timeout waiting for transaction {} to be accepted on L1 after {:?}",
-                        format!("{:#x}", tx_hash),
-                        timeout_duration
-                    )
-                )
-            )
+            ProviderError::StarknetError(starknet::core::types::StarknetError::UnexpectedError(
+                format!(
+                    "Timeout waiting for transaction {:#x} to be accepted on {:?} after {:?}",
+                    tx_hash, target, timeout_duration
+                ),
+            ))
         })?
     }
 

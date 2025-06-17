@@ -7,6 +7,7 @@ pub mod u256;
 
 pub use conversion::*;
 pub use errors::*;
+pub use fallback_provider::{FallbackProvider, WaitForTarget};
 pub use network::*;
 pub use typed_data::*;
 pub use u256::*;
