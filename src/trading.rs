@@ -6,7 +6,7 @@ use serde::{Deserialize, Deserializer};
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, Copy, strum::EnumString, strum::Display)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
-#[strum(ascii_case_insensitive)]
+#[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum Side {
     Long,
     Short,
