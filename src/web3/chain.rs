@@ -14,6 +14,10 @@ pub enum ChainError {
     derive(serde::Serialize, serde::Deserialize),
     serde(rename_all = "lowercase")
 )]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum Chain {
     Starknet,

@@ -5,6 +5,10 @@ use crate::{instrument_type::InstrumentType, pair::Pair, web3::Chain};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct PriceEntry {
     pub source: String,

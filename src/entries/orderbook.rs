@@ -5,6 +5,10 @@ use crate::{instrument_type::InstrumentType, pair::Pair};
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct OrderbookEntry {
     pub source: String,
@@ -17,6 +21,10 @@ pub struct OrderbookEntry {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum OrderbookUpdateType {
     Update,
@@ -34,6 +42,10 @@ impl std::fmt::Display for OrderbookUpdateType {
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct OrderbookData {
     pub update_id: u64,

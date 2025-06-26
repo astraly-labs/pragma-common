@@ -1,6 +1,6 @@
 [package]
 name = "pragma-common"
-version = "0.3.16"
+version = "0.3.17"
 edition = "2021"
 rust-version = "1.81"
 categories = ["finance", "api-bindings"]
@@ -12,6 +12,7 @@ license = "MIT"
 
 [features]
 serde = ["dep:serde"]
+borsh = ["dep:borsh"]
 proto = ["dep:prost"]
 utoipa = ["dep:utoipa"]
 task-group = ["dep:tokio", "dep:futures"]
@@ -62,6 +63,9 @@ tokio-util = { version = "0.7", optional = true }
 
 # feature[serde]
 serde = { version = "1.0", features = ["derive"], optional = true }
+
+# feature[borsh]
+borsh = { version = "1.5.7", features = ["derive"], optional = true }
 
 # feature[starknet]
 cainome = { version = "0.7", features = ["abigen-rs"], optional = true }

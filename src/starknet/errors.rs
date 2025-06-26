@@ -4,6 +4,10 @@ use starknet::core::types::Felt;
 #[derive(Debug, thiserror::Error)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 pub enum ConversionError {
     #[error("failed to serialize")]
     FailedSerialization,

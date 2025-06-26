@@ -1931,10 +1931,11 @@ dependencies = [
 
 [[package]]
 name = "pragma-common"
-version = "0.3.16"
+version = "0.3.17"
 dependencies = [
  "anyhow",
  "async-trait",
+ "borsh",
  "cainome",
  "futures",
  "indexmap 2.8.0",

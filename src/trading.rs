@@ -4,8 +4,14 @@ use std::str::FromStr;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer};
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, Copy, strum::EnumString, strum::Display)]
+#[derive(
+    Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq, Copy, strum::EnumString, strum::Display,
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[strum(ascii_case_insensitive, serialize_all = "UPPERCASE")]
 pub enum Side {
     Long,

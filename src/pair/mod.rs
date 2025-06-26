@@ -9,6 +9,10 @@ const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 /// Base and quote are always in UPPERCASE.
 #[derive(Default, Debug, Clone, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize,))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Pair {
     pub base: String,
