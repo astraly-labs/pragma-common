@@ -90,3 +90,25 @@ fn test_volume_entry_proto() {
     let entry: VolumeEntry = VolumeEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(entry, x);
 }
+
+#[cfg(feature = "proto")]
+#[test]
+fn test_trade_entry_proto() {
+    use pragma_common::entries::trade::{TradeEntry, TradeSide};
+
+    let x = TradeEntry {
+        source: "TEST".to_string(),
+        instrument_type: InstrumentType::Spot,
+        pair: Pair::from_currencies("BTC", "USD"),
+        trade_id: "0x4567576".into(),
+        side: TradeSide::Buy,
+        size: 1.0,
+        price: 101_024.0,
+        timestamp_ms: 145567,
+    };
+
+    let payload = x.to_proto_bytes();
+    let entry: TradeEntry = TradeEntry::from_proto_bytes(&payload).unwrap();
+
+    assert_eq!(entry, x);
+}

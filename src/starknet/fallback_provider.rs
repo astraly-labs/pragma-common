@@ -233,15 +233,22 @@ impl FallbackProvider {
                             last_error = Some(err);
                             continue;
                         }
-                        _ if err
-                            .to_string()
-                            .contains("Unable to complete request at this time.") =>
+                        ProviderError::Other(err)
+                            if err
+                                .to_string()
+                                .contains("Unable to complete request at this time.") =>
                         {
-                            last_error = Some(err);
+                            last_error = Some(ProviderError::Other(err));
+                            continue;
+                        }
+                        ProviderError::Other(err)
+                            if err.to_string().contains("error sending request") =>
+                        {
+                            last_error = Some(ProviderError::Other(err));
                             continue;
                         }
                         // Else we just bubble up the error
-                        _ => {
+                        err => {
                             return Err(err);
                         }
                     }
