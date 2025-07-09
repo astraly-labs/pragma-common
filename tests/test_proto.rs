@@ -111,4 +111,20 @@ fn test_trade_entry_proto() {
     let entry: TradeEntry = TradeEntry::from_proto_bytes(&payload).unwrap();
 
     assert_eq!(entry, x);
+
+    let x = TradeEntry {
+        source: "TEST".to_string(),
+        instrument_type: InstrumentType::Perp,
+        pair: Pair::from_currencies("ETH", "USD"),
+        trade_id: "0x4567576".into(),
+        side: TradeSide::Sell,
+        size: 1.0,
+        price: 101_024.0,
+        timestamp_ms: 145567,
+    };
+
+    let payload = x.to_proto_bytes();
+    let entry: TradeEntry = TradeEntry::from_proto_bytes(&payload).unwrap();
+
+    assert_eq!(entry, x);
 }

@@ -14,3 +14,4 @@ pub mod trade;
 pub use funding_rate::FundingRateEntry;
 pub use orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType};
 pub use price::PriceEntry;
+pub use trade::{TradeEntry, TradeSide};
