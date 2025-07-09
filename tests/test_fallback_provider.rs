@@ -11,7 +11,7 @@ async fn test_fallback() {
 
     let provider = FallbackProvider::new(vec![
         Url::from_str("http://i_do_not_exists_hehe.com").unwrap(),
-        Url::from_str("https://api.cartridge.gg/x/starknet/mainnet").unwrap(),
+        Url::from_str("https://api.cartridge.gg/x/starknet/mainnet/").unwrap(),
     ])
     .unwrap();
 
