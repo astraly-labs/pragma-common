@@ -83,68 +83,97 @@ impl From<Pair> for String {
     }
 }
 
-impl From<&str> for Pair {
-    fn from(pair_id: &str) -> Self {
+impl TryFrom<&str> for Pair {
+    type Error = anyhow::Error;
+
+    fn try_from(pair_id: &str) -> anyhow::Result<Self> {
+        // Normalize: replace "-" and "_" with "/"
         let normalized = pair_id.replace(['-', '_'], "/");
+
+        // Split into parts
         let parts: Vec<&str> = normalized.split('/').collect();
-        Self {
+
+        // Validate: exactly 2 parts
+        if parts.len() != 2 || parts[0].trim().is_empty() || parts[1].trim().is_empty() {
+            anyhow::bail!("Invalid pair format: expected format like A/B");
+        }
+
+        Ok(Self {
             base: parts[0].trim().to_uppercase(),
             quote: parts[1].trim().to_uppercase(),
-        }
+        })
     }
 }
 
-impl From<String> for Pair {
-    fn from(pair_id: String) -> Self {
-        Self::from(pair_id.as_str())
+impl TryFrom<String> for Pair {
+    type Error = anyhow::Error;
+
+    fn try_from(pair_id: String) -> anyhow::Result<Self> {
+        Self::try_from(pair_id.as_str())
+    }
+}
+
+impl TryFrom<(String, String)> for Pair {
+    type Error = anyhow::Error;
+
+    fn try_from(pair: (String, String)) -> anyhow::Result<Self> {
+        let (base, quote) = pair;
+
+        if !base.chars().all(|c| c.is_ascii_alphabetic()) {
+            anyhow::bail!("Invalid base symbol: only ASCII letters allowed");
+        }
+
+        if !quote.chars().all(|c| c.is_ascii_alphabetic()) {
+            anyhow::bail!("Invalid quote symbol: only ASCII letters allowed");
+        }
+
+        Ok(Self {
+            base: base.to_uppercase(),
+            quote: quote.to_uppercase(),
+        })
     }
 }
 
 impl FromStr for Pair {
-    type Err = ();
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self::from(s))
-    }
-}
-
-impl From<(String, String)> for Pair {
-    fn from(pair: (String, String)) -> Self {
-        Self {
-            base: pair.0.to_uppercase(),
-            quote: pair.1.to_uppercase(),
-        }
+        Self::try_from(s)
     }
 }
 
 #[macro_export]
 macro_rules! pair {
     ($pair_str:expr) => {{
+        // Compile-time validation
         #[allow(dead_code)]
-        const fn validate_pair(s: &str) -> bool {
+        const fn is_valid_pair(s: &str) -> bool {
+            let bytes = s.as_bytes();
             let mut count = 0;
-            let chars = s.as_bytes();
             let mut i = 0;
-            while i < chars.len() {
-                if chars[i] == b'/' || chars[i] == b'-' || chars[i] == b'_' {
+            while i < bytes.len() {
+                if bytes[i] == b'/' || bytes[i] == b'-' || bytes[i] == b'_' {
                     count += 1;
                 }
                 i += 1;
             }
             count == 1
         }
+
         const _: () = {
             assert!(
-                validate_pair($pair_str),
+                is_valid_pair($pair_str),
                 "Invalid pair format. Expected format: BASE/QUOTE, BASE-QUOTE, or BASE_QUOTE"
             );
         };
-        let normalized = $pair_str.replace('-', "/").replace('_', "/");
-        let parts: Vec<&str> = normalized.split('/').collect();
-        Pair {
-            base: parts[0].trim().to_uppercase(),
-            quote: parts[1].trim().to_uppercase(),
-        }
+
+        // Runtime normalization and parsing
+        let normalized = $pair_str.replace(['-', '_'], "/");
+        let mut parts = normalized.splitn(2, '/');
+        let base = parts.next().unwrap().trim().to_uppercase();
+        let quote = parts.next().unwrap().trim().to_uppercase();
+
+        $crate::pair::Pair { base, quote }
     }};
 }
 
@@ -253,7 +282,7 @@ mod tests {
     #[case("SOL_USDC", Pair { base: "SOL".to_string(), quote: "USDC".to_string() })]
     #[case(" btc / usd ", Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
     fn test_from_str_to_pair(#[case] input: &str, #[case] expected: Pair) {
-        let pair: Pair = input.into();
+        let pair: Pair = input.try_into().unwrap();
         assert_eq!(pair, expected);
     }
 
@@ -262,7 +291,7 @@ mod tests {
     #[case("BTC/USD".to_string(), Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
     #[case("ETH-USDT".to_string(), Pair { base: "ETH".to_string(), quote: "USDT".to_string() })]
     fn test_from_string_to_pair(#[case] input: String, #[case] expected: Pair) {
-        let pair: Pair = input.into();
+        let pair: Pair = input.try_into().unwrap();
         assert_eq!(pair, expected);
     }
 
@@ -280,7 +309,7 @@ mod tests {
     #[case(("btc".to_string(), "usd".to_string()), Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
     #[case(("Eth".to_string(), "Dai".to_string()), Pair { base: "ETH".to_string(), quote: "DAI".to_string() })]
     fn test_from_tuple(#[case] input: (String, String), #[case] expected: Pair) {
-        let pair: Pair = input.into();
+        let pair: Pair = input.try_into().unwrap();
         assert_eq!(pair, expected);
     }
 
