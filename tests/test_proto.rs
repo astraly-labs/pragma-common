@@ -2,7 +2,7 @@
 use pragma_common::{
     entries::funding_rate::FundingRateEntry,
     entries::open_interest::OpenInterestEntry,
-    entries::orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType},
+    entries::orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType, UpdateType},
     entries::price::PriceEntry,
     entries::volume::VolumeEntry,
     instrument_type::InstrumentType,
@@ -35,7 +35,47 @@ fn test_orderbook_update_proto() {
         source: "TEST".to_string(),
         instrument_type: InstrumentType::Spot,
         pair: Pair::from_currencies("BTC", "USD"),
-        r#type: OrderbookUpdateType::Update,
+        r#type: OrderbookUpdateType::Update(UpdateType::Target),
+        data: OrderbookData {
+            update_id: 4242,
+            bids: vec![(0.0, 1.0), (42.00, 1.0)],
+            asks: vec![(42.00, 69.00), (1.00, 42.00)],
+        },
+        timestamp_ms: 145567,
+    };
+    let payload = x.to_proto_bytes();
+    let orderbook_update: OrderbookEntry = OrderbookEntry::from_proto_bytes(&payload).unwrap();
+    assert_eq!(orderbook_update, x);
+}
+
+#[cfg(feature = "proto")]
+#[test]
+fn test_orderbook_snapshot_proto() {
+    let x = OrderbookEntry {
+        source: "TEST".to_string(),
+        instrument_type: InstrumentType::Spot,
+        pair: Pair::from_currencies("BTC", "USD"),
+        r#type: OrderbookUpdateType::Snapshot,
+        data: OrderbookData {
+            update_id: 4242,
+            bids: vec![(0.0, 1.0), (42.00, 1.0)],
+            asks: vec![(42.00, 69.00), (1.00, 42.00)],
+        },
+        timestamp_ms: 145567,
+    };
+    let payload = x.to_proto_bytes();
+    let orderbook_update: OrderbookEntry = OrderbookEntry::from_proto_bytes(&payload).unwrap();
+    assert_eq!(orderbook_update, x);
+}
+
+#[cfg(feature = "proto")]
+#[test]
+fn test_orderbook_delta_proto() {
+    let x = OrderbookEntry {
+        source: "TEST".to_string(),
+        instrument_type: InstrumentType::Spot,
+        pair: Pair::from_currencies("BTC", "USD"),
+        r#type: OrderbookUpdateType::Update(UpdateType::Delta),
         data: OrderbookData {
             update_id: 4242,
             bids: vec![(0.0, 1.0), (42.00, 1.0)],
