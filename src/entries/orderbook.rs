@@ -27,14 +27,35 @@ pub struct OrderbookEntry {
 )]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub enum OrderbookUpdateType {
-    Update,
+    Update(UpdateType),
     Snapshot,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
+pub enum UpdateType {
+    Target,
+    Delta,
+}
+
+impl std::fmt::Display for UpdateType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Target => write!(f, "target"),
+            Self::Delta => write!(f, "delta"),
+        }
+    }
 }
 
 impl std::fmt::Display for OrderbookUpdateType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Update => write!(f, "update"),
+            Self::Update(update_type) => write!(f, "update with type {}", update_type),
             Self::Snapshot => write!(f, "snapshot"),
         }
     }
@@ -66,12 +87,21 @@ impl OrderbookEntry {
                 base: self.pair.base.clone(),
                 quote: self.pair.quote.clone(),
             }),
-            r#type: match self.r#type {
-                OrderbookUpdateType::Update => crate::schema::OrderbookUpdateType::Update as i32,
-                OrderbookUpdateType::Snapshot => {
-                    crate::schema::OrderbookUpdateType::Snapshot as i32
-                }
-            },
+            r#type: Some(match &self.r#type {
+                OrderbookUpdateType::Update(update_type) => crate::schema::OrderbookUpdateType {
+                    update_type: Some(crate::schema::orderbook_update_type::UpdateType::Update(
+                        match update_type {
+                            UpdateType::Target => crate::schema::UpdateType::Target as i32,
+                            UpdateType::Delta => crate::schema::UpdateType::Delta as i32,
+                        },
+                    )),
+                },
+                OrderbookUpdateType::Snapshot => crate::schema::OrderbookUpdateType {
+                    update_type: Some(crate::schema::orderbook_update_type::UpdateType::Snapshot(
+                        true,
+                    )),
+                },
+            }),
             data: Some(crate::schema::OrderbookData {
                 update_id: self.data.update_id,
                 bids: self
@@ -118,17 +148,35 @@ impl OrderbookEntry {
         };
 
         let r#type = match proto.r#type {
-            x if x == crate::schema::OrderbookUpdateType::Update as i32 => {
-                OrderbookUpdateType::Update
-            }
-            x if x == crate::schema::OrderbookUpdateType::Snapshot as i32 => {
-                OrderbookUpdateType::Snapshot
-            }
-            _ => {
-                return Err(prost::DecodeError::new(format!(
-                    "Invalid type value: {}",
-                    proto.r#type,
-                )))
+            Some(orderbook_update_type) => match orderbook_update_type.update_type {
+                Some(crate::schema::orderbook_update_type::UpdateType::Update(
+                    update_type_value,
+                )) => {
+                    let update_type = match update_type_value {
+                        x if x == crate::schema::UpdateType::Target as i32 => UpdateType::Target,
+                        x if x == crate::schema::UpdateType::Delta as i32 => UpdateType::Delta,
+                        _ => {
+                            return Err(prost::DecodeError::new(format!(
+                                "Invalid update type value: {}",
+                                update_type_value,
+                            )))
+                        }
+                    };
+                    OrderbookUpdateType::Update(update_type)
+                }
+                Some(crate::schema::orderbook_update_type::UpdateType::Snapshot(_)) => {
+                    OrderbookUpdateType::Snapshot
+                }
+                None => {
+                    return Err(prost::DecodeError::new(
+                        "Missing update_type field in OrderbookUpdateType".to_string(),
+                    ))
+                }
+            },
+            None => {
+                return Err(prost::DecodeError::new(
+                    "Missing type field in OrderbookEntry".to_string(),
+                ))
             }
         };
 
