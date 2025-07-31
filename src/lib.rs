@@ -5,6 +5,8 @@ pub mod exchanges;
 
 pub mod currency;
 
+pub mod timestamp;
+
 // Entries retrieved through different markets.
 // This is the data that we'll push in our internal Kafka.
 pub mod entries;
