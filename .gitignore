@@ -17,3 +17,6 @@ target/
 #.idea/
 
 .DS_STORE
+
+# Claude Code documentation
+CLAUDE.md

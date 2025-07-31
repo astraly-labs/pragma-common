@@ -36,7 +36,6 @@ starknet = [
   "dep:indexmap",
   "dep:serde_json",
   "dep:num-bigint",
-  "dep:rust_decimal",
   "dep:tokio",
 ]
 
@@ -47,6 +46,8 @@ prost-build = "0.13.5"
 anyhow = { version = "1" }
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.12"
+
+rust_decimal = { version = "1.37.1", features = ["serde"] }
 
 # feature[services] + [task-group]
 async-trait = { version = "0.1", optional = true }
@@ -64,7 +65,6 @@ borsh = { version = "1.5.7", features = ["derive"], optional = true }
 cainome = { version = "0.7", features = ["abigen-rs"], optional = true }
 indexmap = { version = "2.2", optional = true }
 num-bigint = { version = "0.4.6", features = ["serde"], optional = true }
-rust_decimal = { version = "1.37.1", features = ["serde"], optional = true }
 serde_json = { version = "1.0", optional = true }
 starknet = { version = "0.15.1", optional = true }
 starknet-crypto = { version = "0.7.4", optional = true }

@@ -1,3 +1,4 @@
+use rust_decimal::Decimal;
 
 #[derive(strum::Display, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ExchangeName {
