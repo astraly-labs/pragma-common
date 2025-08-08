@@ -42,6 +42,14 @@ impl InstrumentType {
             Self::Perp => true,
         }
     }
+
+    pub const fn from_str_const(s: &str) -> Option<Self> {
+        match s.as_bytes() {
+            b"spot" | b"SPOT" | b"Spot" => Some(Self::Spot),
+            b"perp" | b"PERP" | b"Perp" => Some(Self::Perp),
+            _ => None,
+        }
+    }
 }
 
 impl Display for InstrumentType {
