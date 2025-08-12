@@ -7,7 +7,7 @@ pub mod margin_type;
 pub use margin_type::MarginType;
 
 #[derive(
-    Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq, Copy, strum::EnumString, strum::Display,
+    Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq, Copy, strum::EnumString, strum::Display, strum::EnumIter
 )]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
@@ -58,7 +58,7 @@ impl Exchange {
         }
     }
 
-    pub fn asset_symbol_from_raw_market_name(&self, market_name: RawMarketName) -> AssetSymbol {
+    pub fn asset_symbol_from_raw_market_name(&self, market_name: &RawMarketName) -> AssetSymbol {
         match self {
             Exchange::Hyperliquid => AssetSymbol::from(market_name),
             Exchange::Paradex | Exchange::Lmax | Exchange::Extended => {
