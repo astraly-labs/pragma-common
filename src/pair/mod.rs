@@ -3,6 +3,7 @@ use std::str::FromStr;
 const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 
 pub type AssetSymbol = String;
+pub type RawMarketName = String;
 
 /// A pair of assets, e.g. BTC/USD
 ///
