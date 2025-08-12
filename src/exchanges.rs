@@ -16,3 +16,13 @@ pub struct FillUpdate {
     pub size: Decimal,
     pub average_price: Decimal,
 }
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum OrderStatus {
+    New,
+    Untriggered,
+    Open,
+    Closed,
+    Cancelled,
+    Rejected(String),
+}
