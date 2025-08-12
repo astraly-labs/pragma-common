@@ -14,10 +14,15 @@ pub mod telemetry;
 
 // Trading types
 pub mod trading;
+pub use trading::Side;
 
 // Pair
 pub mod pair;
-pub use pair::Pair;
+pub use pair::{Pair, AssetSymbol, RawMarketName};
+
+// Exchange
+pub mod exchange;
+pub use exchange::{Exchange, MarginType};
 
 // Types of instrument supported, i.e spot, perp etc.
 pub mod instrument_type;

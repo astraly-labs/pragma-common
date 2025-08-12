@@ -2,6 +2,9 @@ use std::str::FromStr;
 
 const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 
+pub type AssetSymbol = String;
+pub type RawMarketName = String;
+
 /// A pair of assets, e.g. BTC/USD
 ///
 /// This is a simple struct that holds the base and quote assets.
@@ -15,8 +18,8 @@ const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 )]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Pair {
-    pub base: String,
-    pub quote: String,
+    pub base: AssetSymbol,
+    pub quote: AssetSymbol,
 }
 
 impl Pair {
@@ -56,7 +59,7 @@ impl Pair {
     }
 
     /// Get the base and quote as a tuple
-    pub fn as_tuple(&self) -> (String, String) {
+    pub fn as_tuple(&self) -> (AssetSymbol, AssetSymbol) {
         (self.base.clone(), self.quote.clone())
     }
 
