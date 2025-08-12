@@ -82,7 +82,7 @@ impl Exchange {
         }
     }
 
-    pub fn fee_rate(&self) -> f64 {
+    pub const fn fee_rate(&self) -> f64 {
         match self {
             // TODO: make this configurable as they have tiers
             Exchange::Hyperliquid => 0.00045, // 0.045% https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees
@@ -93,7 +93,7 @@ impl Exchange {
     }
 
     /// Whether the exchange has some kind of set leverage endpoint
-    pub fn supports_leverage(&self) -> bool {
+    pub const fn supports_leverage(&self) -> bool {
         match self {
             Exchange::Hyperliquid => true,
             Exchange::Paradex => true,
