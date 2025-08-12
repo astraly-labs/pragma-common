@@ -23,10 +23,6 @@ pub use pair::Pair;
 pub mod exchange;
 pub use exchange::{Exchange, MarginType};
 
-// Timestamp
-pub mod timestamp;
-pub use timestamp::Timestamp;
-
 // Types of instrument supported, i.e spot, perp etc.
 pub mod instrument_type;
 pub use instrument_type::{InstrumentType, InstrumentTypeError};

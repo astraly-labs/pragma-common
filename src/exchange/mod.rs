@@ -1,8 +1,4 @@
 use crate::{pair::AssetSymbol, Pair};
-
-pub mod currency;
-pub mod market;
-
 #[derive(
     Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq, Copy, strum::EnumString, strum::Display,
 )]
