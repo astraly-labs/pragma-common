@@ -11,7 +11,9 @@ pub mod volume;
 // Trade entries
 pub mod trade;
 
-pub use funding_rate::FundingRateEntry;
-pub use orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType};
-pub use price::PriceEntry;
-pub use trade::{TradeEntry, TradeSide};
+pub use funding_rate::*;
+pub use orderbook::*;
+pub use price::*;
+pub use trade::*;
+pub use volume::*;
+pub use open_interest::*;
