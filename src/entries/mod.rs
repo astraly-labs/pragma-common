@@ -12,8 +12,8 @@ pub mod volume;
 pub mod trade;
 
 pub use funding_rate::*;
+pub use open_interest::*;
 pub use orderbook::*;
 pub use price::*;
 pub use trade::*;
 pub use volume::*;
-pub use open_interest::*;
