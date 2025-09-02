@@ -7,7 +7,17 @@ pub mod margin_type;
 pub use margin_type::MarginType;
 
 #[derive(
-    Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq, Copy, strum::EnumString, strum::Display, strum::EnumIter
+    Clone,
+    Debug,
+    Hash,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    Eq,
+    Copy,
+    strum::EnumString,
+    strum::Display,
+    strum::EnumIter,
 )]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(
@@ -38,7 +48,6 @@ impl Exchange {
                 other => format!("PF_{}{}", other, pair.quote),
             },
             Exchange::Lmax | Exchange::Extended => format!("{}-{}", pair.base, pair.quote),
-            _ => unimplemented!("Market name from pair is not supported for this exchange"),
         }
     }
 
@@ -52,9 +61,6 @@ impl Exchange {
                 other => format!("PF_{other}USD"),
             },
             Exchange::Lmax | Exchange::Extended => format!("{}-USD", asset_symbol),
-            _ => unimplemented!(
-                "USD market name from asset symbol is not supported for this exchange"
-            ),
         }
     }
 
@@ -75,9 +81,6 @@ impl Exchange {
                     market_name.split('/').next().unwrap().into()
                 }
             }
-            _ => unimplemented!(
-                "Asset symbol from raw market name is not supported for this exchange"
-            ),
         }
     }
 
@@ -89,7 +92,7 @@ impl Exchange {
             Exchange::Hyperliquid => 0.00045, // 0.045% https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees
             Exchange::Paradex => 0.0003, // 0.03% https://docs.paradex.trade/documentation/trading/trading-fees
             Exchange::Kraken => 0.0002,  // 0.02% https://www.kraken.com/features/fee-schedule
-            Exchange::Extended => 0.00025,  // 0.025% https://docs.extended.exchange/extended-resources/trading/trading-fees-and-rebates
+            Exchange::Extended => 0.00025, // 0.025% https://docs.extended.exchange/extended-resources/trading/trading-fees-and-rebates
             _ => todo!(),
         }
     }

@@ -18,7 +18,7 @@ pub use trading::Side;
 
 // Pair
 pub mod pair;
-pub use pair::{Pair, AssetSymbol, RawMarketName};
+pub use pair::{AssetSymbol, Pair, RawMarketName};
 
 // Exchange
 pub mod exchange;
