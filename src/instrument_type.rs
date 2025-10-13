@@ -49,6 +49,10 @@ impl InstrumentType {
             _ => None,
         }
     }
+
+    pub fn to_ascii_uppercase(&self) -> String {
+        format!("{}", self).to_ascii_uppercase()
+    }
 }
 
 impl TryFrom<i32> for InstrumentType {
