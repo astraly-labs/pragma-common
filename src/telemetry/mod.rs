@@ -4,7 +4,7 @@ use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::logs::{BatchConfig, LoggerProvider};
 use opentelemetry_sdk::metrics::reader::DefaultTemporalitySelector;
-use opentelemetry_sdk::metrics::{MeterProviderBuilder, PeriodicReader};
+use opentelemetry_sdk::metrics::{MeterProviderBuilder, PeriodicReader, SdkMeterProvider};
 use opentelemetry_sdk::{runtime, trace::BatchConfigBuilder};
 use opentelemetry_sdk::{
     trace::{Config, Tracer},
@@ -30,10 +30,16 @@ pub enum TelemetryError {
     LogError(#[from] opentelemetry::logs::LogError),
 }
 
+pub struct ProviderSet {
+    pub tracer_provider: Option<Tracer>,
+    pub logger_provider: Option<LoggerProvider>,
+    pub metrics_provider: Option<SdkMeterProvider>,
+}
+
 pub fn init_telemetry(
     app_name: &str,
     collection_endpoint: Option<String>,
-) -> Result<(), TelemetryError> {
+) -> Result<ProviderSet, TelemetryError> {
     let tracing_subscriber = tracing_subscriber::registry().with(
         EnvFilter::builder()
             .with_default_directive(LevelFilter::DEBUG.into())
@@ -43,13 +49,19 @@ pub fn init_telemetry(
     if let Some(endpoint) = collection_endpoint {
         let tracer_provider = init_tracer_provider(app_name, &endpoint);
         let logger_provider = init_logs_provider(app_name, &endpoint)?;
-        init_meter_provider(app_name, &endpoint)?;
+        let metrics_provider = init_meter_provider(app_name, &endpoint)?;
 
         tracing_subscriber
             .with(tracing_subscriber::fmt::layer())
-            .with(OpenTelemetryLayer::new(tracer_provider))
+            .with(OpenTelemetryLayer::new(tracer_provider.clone()))
             .with(OpenTelemetryTracingBridge::new(&logger_provider))
             .try_init()?;
+
+        Ok(ProviderSet {
+            tracer_provider: Some(tracer_provider),
+            logger_provider: Some(logger_provider),
+            metrics_provider: Some(metrics_provider),
+        })
     } else {
         // Ignore spans when collection_endpoint is None
         let filter = tracing_subscriber::filter::FilterFn::new(|metadata| !metadata.is_span());
@@ -64,9 +76,13 @@ pub fn init_telemetry(
                     .with_span_events(FmtSpan::NONE),
             )
             .try_init()?;
-    }
 
-    Ok(())
+        Ok(ProviderSet {
+            tracer_provider: None,
+            logger_provider: None,
+            metrics_provider: None,
+        })
+    }
 }
 
 fn init_tracer_provider(app_name: &str, collection_endpoint: &str) -> Tracer {
@@ -125,7 +141,7 @@ fn init_logs_provider(
 pub fn init_meter_provider(
     app_name: &str,
     collection_endpoint: &str,
-) -> Result<(), TelemetryError> {
+) -> Result<SdkMeterProvider, TelemetryError> {
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
         .with_endpoint(collection_endpoint)
@@ -143,7 +159,7 @@ pub fn init_meter_provider(
         )]))
         .build();
 
-    global::set_meter_provider(metrics_provider);
+    global::set_meter_provider(metrics_provider.clone());
 
-    Ok(())
+    Ok(metrics_provider)
 }
