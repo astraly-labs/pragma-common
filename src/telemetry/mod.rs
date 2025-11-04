@@ -1,4 +1,4 @@
-use opentelemetry::trace::TracerProvider;
+use opentelemetry::trace::TracerProvider as _;
 use opentelemetry::{global, KeyValue};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_otlp::WithExportConfig;
@@ -7,7 +7,7 @@ use opentelemetry_sdk::metrics::reader::DefaultTemporalitySelector;
 use opentelemetry_sdk::metrics::{MeterProviderBuilder, PeriodicReader, SdkMeterProvider};
 use opentelemetry_sdk::{runtime, trace::BatchConfigBuilder};
 use opentelemetry_sdk::{
-    trace::{Config, Tracer},
+    trace::{Config, TracerProvider},
     Resource,
 };
 use opentelemetry_semantic_conventions::resource::SERVICE_NAME;
@@ -31,9 +31,24 @@ pub enum TelemetryError {
 }
 
 pub struct ProviderSet {
-    pub tracer_provider: Option<Tracer>,
+    pub tracer_provider: Option<TracerProvider>,
     pub logger_provider: Option<LoggerProvider>,
     pub metrics_provider: Option<SdkMeterProvider>,
+}
+
+impl ProviderSet {
+    pub fn shutdown(&mut self) -> Result<(), TelemetryError> {
+        if let Some(tracer_provider) = self.tracer_provider.take() {
+            tracer_provider.shutdown()?;
+        }
+        if let Some(logger_provider) = self.logger_provider.take() {
+            logger_provider.shutdown()?;
+        }
+        if let Some(metrics_provider) = self.metrics_provider.take() {
+            metrics_provider.shutdown()?;
+        }
+        Ok(())
+    }
 }
 
 pub fn init_telemetry(
@@ -53,7 +68,9 @@ pub fn init_telemetry(
 
         tracing_subscriber
             .with(tracing_subscriber::fmt::layer())
-            .with(OpenTelemetryLayer::new(tracer_provider.clone()))
+            .with(OpenTelemetryLayer::new(
+                tracer_provider.tracer(format!("{app_name}-subscriber")),
+            ))
             .with(OpenTelemetryTracingBridge::new(&logger_provider))
             .try_init()?;
 
@@ -85,7 +102,7 @@ pub fn init_telemetry(
     }
 }
 
-fn init_tracer_provider(app_name: &str, collection_endpoint: &str) -> Tracer {
+fn init_tracer_provider(app_name: &str, collection_endpoint: &str) -> TracerProvider {
     // Set a custom error handler to log OpenTelemetry errors with timestamps
     global::set_error_handler(|error| {
         tracing::error!(error = %error, "OpenTelemetry error occurred");
@@ -114,7 +131,7 @@ fn init_tracer_provider(app_name: &str, collection_endpoint: &str) -> Tracer {
         .expect("Failed to install tracer provider");
 
     global::set_tracer_provider(provider.clone());
-    provider.tracer(format!("{app_name}-subscriber"))
+    provider
 }
 
 fn init_logs_provider(
