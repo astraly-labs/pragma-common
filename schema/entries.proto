@@ -114,8 +114,10 @@ message TradeEntry {
   InstrumentType instrumentType = 2;
   Pair pair = 3;
   string tradeId = 4;
-  TradeSide side = 5;
-  double size = 6;
-  double price = 7;
-  int64 timestampMs = 8;
+  string buyerAddress = 5;
+  string sellerAddress = 6;
+  TradeSide side = 7;
+  double size = 8;
+  double price = 9;
+  int64 timestampMs = 10;
 }
