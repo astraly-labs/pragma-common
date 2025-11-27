@@ -1,3 +1,8 @@
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
+
 use opentelemetry::trace::TracerProvider as _;
 use opentelemetry::{global, KeyValue};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
@@ -34,10 +39,12 @@ pub struct ProviderSet {
     pub tracer_provider: Option<TracerProvider>,
     pub logger_provider: Option<LoggerProvider>,
     pub metrics_provider: Option<SdkMeterProvider>,
+    shutdown_called: Arc<AtomicBool>,
 }
 
 impl ProviderSet {
     pub fn shutdown(&mut self) -> Result<(), TelemetryError> {
+        self.shutdown_called.store(true, Ordering::Release);
         if let Some(tracer_provider) = self.tracer_provider.take() {
             tracer_provider.shutdown()?;
         }
@@ -61,8 +68,9 @@ pub fn init_telemetry(
             .from_env_lossy(),
     );
 
+    let shutdown_called = Arc::new(AtomicBool::new(false));
     if let Some(endpoint) = collection_endpoint {
-        let tracer_provider = init_tracer_provider(app_name, &endpoint);
+        let tracer_provider = init_tracer_provider(app_name, &endpoint, shutdown_called.clone());
         let logger_provider = init_logs_provider(app_name, &endpoint)?;
         let metrics_provider = init_meter_provider(app_name, &endpoint)?;
 
@@ -78,6 +86,7 @@ pub fn init_telemetry(
             tracer_provider: Some(tracer_provider),
             logger_provider: Some(logger_provider),
             metrics_provider: Some(metrics_provider),
+            shutdown_called,
         })
     } else {
         // Ignore spans when collection_endpoint is None
@@ -98,14 +107,22 @@ pub fn init_telemetry(
             tracer_provider: None,
             logger_provider: None,
             metrics_provider: None,
+            shutdown_called,
         })
     }
 }
 
-fn init_tracer_provider(app_name: &str, collection_endpoint: &str) -> TracerProvider {
-    // Set a custom error handler to log OpenTelemetry errors with timestamps
-    global::set_error_handler(|error| {
-        tracing::error!(error = %error, "OpenTelemetry error occurred");
+fn init_tracer_provider(
+    app_name: &str,
+    collection_endpoint: &str,
+    shutdown_called: Arc<AtomicBool>,
+) -> TracerProvider {
+    // Set a custom error handler to log OpenTelemetry errors with timestamps. Avoid dumping errors
+    // if the shutdown process is engaged.
+    global::set_error_handler(move |error| {
+        if !shutdown_called.load(Ordering::Acquire) {
+            tracing::error!(error = %error, "OpenTelemetry error occurred");
+        }
     })
     .expect("Failed to set error handler");
 
