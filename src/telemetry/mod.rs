@@ -6,15 +6,11 @@ use std::sync::{
 use opentelemetry::trace::TracerProvider as _;
 use opentelemetry::{global, KeyValue};
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
-use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::logs::{BatchConfig, LoggerProvider};
-use opentelemetry_sdk::metrics::reader::DefaultTemporalitySelector;
-use opentelemetry_sdk::metrics::{MeterProviderBuilder, PeriodicReader, SdkMeterProvider};
-use opentelemetry_sdk::{runtime, trace::BatchConfigBuilder};
-use opentelemetry_sdk::{
-    trace::{Config, TracerProvider},
-    Resource,
-};
+use opentelemetry_otlp::{LogExporter, MetricExporter, SpanExporter, WithExportConfig};
+use opentelemetry_sdk::logs::SdkLoggerProvider;
+use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
+use opentelemetry_sdk::trace::SdkTracerProvider;
+use opentelemetry_sdk::Resource;
 use opentelemetry_semantic_conventions::resource::SERVICE_NAME;
 use tracing::level_filters::LevelFilter;
 use tracing_opentelemetry::OpenTelemetryLayer;
@@ -26,18 +22,20 @@ use tracing_subscriber::EnvFilter;
 #[derive(thiserror::Error, Debug)]
 pub enum TelemetryError {
     #[error("trace error: {0}")]
-    TraceError(#[from] opentelemetry::trace::TraceError),
+    TraceError(#[from] opentelemetry_sdk::trace::TraceError),
     #[error("try init error: {0}")]
     TryInitError(#[from] tracing_subscriber::util::TryInitError),
     #[error("metrics error: {0}")]
-    MetricsError(#[from] opentelemetry::metrics::MetricsError),
-    #[error("log error: {0}")]
-    LogError(#[from] opentelemetry::logs::LogError),
+    MetricsError(#[from] opentelemetry_sdk::metrics::MetricError),
+    #[error("exporter build error: {0}")]
+    ExporterBuildError(#[from] opentelemetry_otlp::ExporterBuildError),
+    #[error("sdk error: {0}")]
+    SdkError(#[from] opentelemetry_sdk::error::OTelSdkError),
 }
 
 pub struct ProviderSet {
-    pub tracer_provider: Option<TracerProvider>,
-    pub logger_provider: Option<LoggerProvider>,
+    pub tracer_provider: Option<SdkTracerProvider>,
+    pub logger_provider: Option<SdkLoggerProvider>,
     pub metrics_provider: Option<SdkMeterProvider>,
     shutdown_called: Arc<AtomicBool>,
 }
@@ -70,7 +68,7 @@ pub fn init_telemetry(
 
     let shutdown_called = Arc::new(AtomicBool::new(false));
     if let Some(endpoint) = collection_endpoint {
-        let tracer_provider = init_tracer_provider(app_name, &endpoint, shutdown_called.clone());
+        let tracer_provider = init_tracer_provider(app_name, &endpoint)?;
         let logger_provider = init_logs_provider(app_name, &endpoint)?;
         let metrics_provider = init_meter_provider(app_name, &endpoint)?;
 
@@ -115,82 +113,75 @@ pub fn init_telemetry(
 fn init_tracer_provider(
     app_name: &str,
     collection_endpoint: &str,
-    shutdown_called: Arc<AtomicBool>,
-) -> TracerProvider {
-    // Set a custom error handler to log OpenTelemetry errors with timestamps. Avoid dumping errors
-    // if the shutdown process is engaged.
-    global::set_error_handler(move |error| {
-        if !shutdown_called.load(Ordering::Acquire) {
-            tracing::error!(error = %error, "OpenTelemetry error occurred");
-        }
-    })
-    .expect("Failed to set error handler");
+) -> Result<SdkTracerProvider, TelemetryError> {
+    let exporter = SpanExporter::builder()
+        .with_tonic()
+        .with_endpoint(collection_endpoint)
+        .build()?;
 
-    let provider = opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_batch_config(
-            BatchConfigBuilder::default()
-                .with_max_queue_size(4096)
-                .build(),
-        )
-        .with_trace_config(
-            Config::default().with_resource(Resource::new(vec![KeyValue::new(
-                SERVICE_NAME,
-                format!("{app_name}-trace-service"),
-            )])),
-        )
-        .with_exporter(
-            opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_endpoint(collection_endpoint),
-        )
-        .install_batch(runtime::Tokio)
-        .expect("Failed to install tracer provider");
+    let resource = Resource::builder()
+        .with_attribute(KeyValue::new(
+            SERVICE_NAME,
+            format!("{app_name}-trace-service"),
+        ))
+        .build();
+
+    let provider = SdkTracerProvider::builder()
+        .with_batch_exporter(exporter)
+        .with_resource(resource)
+        .build();
 
     global::set_tracer_provider(provider.clone());
-    provider
+    Ok(provider)
 }
 
 fn init_logs_provider(
     app_name: &str,
     collection_endpoint: &str,
-) -> Result<LoggerProvider, TelemetryError> {
-    let logger = opentelemetry_otlp::new_pipeline()
-        .logging()
-        .with_batch_config(BatchConfig::default())
-        .with_resource(Resource::new(vec![KeyValue::new(
+) -> Result<SdkLoggerProvider, TelemetryError> {
+    let exporter = LogExporter::builder()
+        .with_tonic()
+        .with_endpoint(collection_endpoint)
+        .build()?;
+
+    let resource = Resource::builder()
+        .with_attribute(KeyValue::new(
             SERVICE_NAME,
             format!("{app_name}-logs-service"),
-        )]))
-        .with_exporter(
-            opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_endpoint(collection_endpoint),
-        )
-        .install_batch(runtime::Tokio)?;
+        ))
+        .build();
 
-    Ok(logger)
+    let logger_provider = SdkLoggerProvider::builder()
+        .with_batch_exporter(exporter)
+        .with_resource(resource)
+        .build();
+
+    Ok(logger_provider)
 }
 
 pub fn init_meter_provider(
     app_name: &str,
     collection_endpoint: &str,
 ) -> Result<SdkMeterProvider, TelemetryError> {
-    let exporter = opentelemetry_otlp::new_exporter()
-        .tonic()
+    let exporter = MetricExporter::builder()
+        .with_tonic()
         .with_endpoint(collection_endpoint)
-        .build_metrics_exporter(Box::new(DefaultTemporalitySelector::new()))?;
+        .build()?;
 
-    let reader = PeriodicReader::builder(exporter, runtime::Tokio)
+    let reader = PeriodicReader::builder(exporter)
         .with_interval(std::time::Duration::from_secs(5))
         .build();
 
-    let metrics_provider = MeterProviderBuilder::default()
-        .with_reader(reader)
-        .with_resource(Resource::new(vec![KeyValue::new(
+    let resource = Resource::builder()
+        .with_attribute(KeyValue::new(
             SERVICE_NAME,
             format!("{app_name}-meter-service"),
-        )]))
+        ))
+        .build();
+
+    let metrics_provider = SdkMeterProvider::builder()
+        .with_reader(reader)
+        .with_resource(resource)
         .build();
 
     global::set_meter_provider(metrics_provider.clone());
