@@ -11,6 +11,7 @@ repository = "https://github.com/astraly-labs/pragma-common"
 license = "MIT"
 
 [features]
+default = []
 serde = ["dep:serde"]
 borsh = ["dep:borsh"]
 proto = ["dep:prost"]
