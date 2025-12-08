@@ -222,7 +222,9 @@ mod test_services {
             should_panic: false,
         };
 
-        let mut group = ServiceGroup::default().with(service1).with(service2);
+        let mut group = ServiceGroup::default()
+            .with_critical(service1)
+            .with_critical(service2);
 
         let ctx = ServiceContext::new();
         let mut join_set = JoinSet::new();
@@ -264,6 +266,214 @@ mod test_services {
 
         assert_eq!(count1_before, count1_after, "Service 1 should have stopped");
         assert_eq!(count2_before, count2_after, "Service 2 should have stopped");
+    }
+
+    #[tokio::test]
+    async fn test_empty_service_group() {
+        let mut group = ServiceGroup::default();
+
+        let ctx = ServiceContext::new();
+        let mut join_set = JoinSet::new();
+        let runner = ServiceRunner::new(ctx.clone(), &mut join_set);
+
+        // Start service group
+        assert!(group.start(runner).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_aux_only_service_group() {
+        let counter1 = Arc::new(Mutex::new(0));
+        let counter2 = Arc::new(Mutex::new(0));
+
+        let service1 = TestService {
+            counter: counter1.clone(),
+            sleep_duration: Some(Duration::from_millis(50)),
+            should_panic: false,
+        };
+
+        let service2 = TestService {
+            counter: counter2.clone(),
+            sleep_duration: Some(Duration::from_millis(30)),
+            should_panic: false,
+        };
+
+        let mut group = ServiceGroup::default()
+            .with_auxiliary(service1)
+            .with_auxiliary(service2);
+
+        let ctx = ServiceContext::new();
+        let mut join_set = JoinSet::new();
+        let runner = ServiceRunner::new(ctx.clone(), &mut join_set);
+
+        // Start service group
+        assert!(group.start(runner).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_mixed_service_group() {
+        let counter1 = Arc::new(Mutex::new(0));
+        let counter2 = Arc::new(Mutex::new(0));
+
+        let service1 = TestService {
+            counter: counter1.clone(),
+            sleep_duration: Some(Duration::from_millis(50)),
+            should_panic: false,
+        };
+
+        let service2 = TestService {
+            counter: counter2.clone(),
+            sleep_duration: Some(Duration::from_millis(30)),
+            should_panic: false,
+        };
+
+        let mut group = ServiceGroup::default()
+            .with_critical(service1)
+            .with_auxiliary(service2);
+
+        let ctx = ServiceContext::new();
+        let mut join_set = JoinSet::new();
+        let runner = ServiceRunner::new(ctx.clone(), &mut join_set);
+
+        // Start service group
+        group.start(runner).await.unwrap();
+
+        // Let services run
+        sleep(Duration::from_millis(200)).await;
+
+        // Verify both services are running
+        let count1 = *counter1.lock().unwrap();
+        let count2 = *counter2.lock().unwrap();
+
+        assert!(count1 > 0, "Service 1 should have incremented counter");
+        assert!(count2 > 0, "Service 2 should have incremented counter");
+        assert!(
+            count2 > count1,
+            "Service 2 should increment faster than Service 1"
+        );
+
+        // Cancel all services
+        ctx.cancel();
+
+        // Wait for all services to complete
+        while let Some(result) = join_set.join_next().await {
+            result.unwrap().unwrap();
+        }
+
+        // Verify all services stopped
+        let count1_before = *counter1.lock().unwrap();
+        let count2_before = *counter2.lock().unwrap();
+
+        sleep(Duration::from_millis(200)).await;
+
+        let count1_after = *counter1.lock().unwrap();
+        let count2_after = *counter2.lock().unwrap();
+
+        assert_eq!(count1_before, count1_after, "Service 1 should have stopped");
+        assert_eq!(count2_before, count2_after, "Service 2 should have stopped");
+    }
+
+    #[tokio::test]
+    async fn test_auxiliary_service_failure() {
+        let counter1 = Arc::new(Mutex::new(0));
+        let counter2 = Arc::new(Mutex::new(0));
+
+        let service1 = TestService {
+            counter: counter1.clone(),
+            sleep_duration: Some(Duration::from_millis(50)),
+            should_panic: false,
+        };
+
+        let service2 = TestService {
+            counter: counter2.clone(),
+            sleep_duration: Some(Duration::from_millis(30)),
+            should_panic: true,
+        };
+
+        let mut group = ServiceGroup::default()
+            .with_critical(service1)
+            .with_auxiliary(service2);
+
+        let ctx = ServiceContext::new();
+        let mut join_set = JoinSet::new();
+        let runner = ServiceRunner::new(ctx.clone(), &mut join_set);
+
+        // Start service group
+        group.start(runner).await.unwrap();
+
+        // Let services run
+        sleep(Duration::from_millis(200)).await;
+
+        // Verify both services are running
+        let count1 = *counter1.lock().unwrap();
+        let count2 = *counter2.lock().unwrap();
+
+        assert!(count1 > 0, "Service 1 should have incremented counter");
+        assert!(count2 == 0, "Service 2 should not have incremented counter");
+
+        // Cancel all services
+        ctx.cancel();
+
+        // Wait for all services to complete
+        while let Some(result) = join_set.join_next().await {
+            result.unwrap().unwrap();
+        }
+
+        // Verify all services stopped
+        let count1_before = *counter1.lock().unwrap();
+
+        sleep(Duration::from_millis(200)).await;
+
+        let count1_after = *counter1.lock().unwrap();
+
+        assert_eq!(count1_before, count1_after, "Service 1 should have stopped");
+    }
+
+    #[tokio::test]
+    #[should_panic(expected = "Service panic as requested")]
+    async fn test_critical_service_failure() {
+        let counter1 = Arc::new(Mutex::new(0));
+        let counter2 = Arc::new(Mutex::new(0));
+
+        let service1 = TestService {
+            counter: counter1.clone(),
+            sleep_duration: Some(Duration::from_millis(50)),
+            should_panic: true,
+        };
+
+        let service2 = TestService {
+            counter: counter2.clone(),
+            sleep_duration: Some(Duration::from_millis(30)),
+            should_panic: false,
+        };
+
+        let mut group = ServiceGroup::default()
+            .with_critical(service1)
+            .with_critical(service2);
+
+        let ctx = ServiceContext::new();
+        let mut join_set = JoinSet::new();
+        let runner = ServiceRunner::new(ctx.clone(), &mut join_set);
+
+        // Start service group
+        group.start(runner).await.unwrap();
+
+        // Let services run
+        sleep(Duration::from_millis(200)).await;
+
+        // Verify both services are running
+        let count1 = *counter1.lock().unwrap();
+        let count2 = *counter2.lock().unwrap();
+
+        assert!(count1 == 0, "Service 1 should not have incremented counter");
+        assert!(count2 > 0, "Service 2 should have incremented counter");
+
+        // Cancel all services
+        ctx.cancel();
+
+        // Wait for all services to complete
+        while let Some(result) = join_set.join_next().await {
+            result.unwrap().unwrap();
+        }
     }
 
     #[tokio::test]
