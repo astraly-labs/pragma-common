@@ -147,8 +147,7 @@ mod test_services {
         let final_count = *counter.lock().unwrap();
         assert!(
             final_count >= 5,
-            "Counter should be at least 5, got {}",
-            final_count
+            "Counter should be at least 5, got {final_count}",
         );
     }
 

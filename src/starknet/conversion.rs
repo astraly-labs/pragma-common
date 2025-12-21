@@ -1,4 +1,4 @@
-use starknet::core::types::Felt;
+use starknet_rust::core::types::Felt;
 
 pub mod starknet_felt_conversion {
     use super::Felt; // Import Felt from the parent module (or crate)
@@ -34,7 +34,7 @@ pub mod starknet_felt_conversion {
 #[cfg(test)]
 mod tests {
     use super::starknet_felt_conversion::*; // Use the new module
-    use starknet::core::types::Felt;
+    use starknet_rust::core::types::Felt;
 
     // Helper function to create Felt from a byte slice, padding/truncating to 32 bytes BE
     fn felt_from_custom_bytes(slice: &[u8]) -> Felt {

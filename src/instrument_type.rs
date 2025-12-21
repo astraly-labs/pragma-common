@@ -51,7 +51,7 @@ impl InstrumentType {
     }
 
     pub fn to_ascii_uppercase(&self) -> String {
-        format!("{}", self).to_ascii_uppercase()
+        format!("{self}").to_ascii_uppercase()
     }
 }
 

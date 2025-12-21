@@ -60,7 +60,7 @@ impl Exchange {
                 "BTC" => "PF_XBTUSD".to_string(),
                 other => format!("PF_{other}USD"),
             },
-            Exchange::Lmax | Exchange::Extended => format!("{}-USD", asset_symbol),
+            Exchange::Lmax | Exchange::Extended => format!("{asset_symbol}-USD"),
         }
     }
 

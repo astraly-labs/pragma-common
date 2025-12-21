@@ -3,7 +3,7 @@ use std::str::FromStr;
 use anyhow::Context;
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
-use starknet::core::types::Felt;
+use starknet_rust::core::types::Felt;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct StarknetU256 {
@@ -143,7 +143,7 @@ impl TryFrom<BigUint> for StarknetU256 {
 #[cfg(test)]
 mod tests {
     use num_bigint::BigUint;
-    use starknet::core::types::Felt;
+    use starknet_rust::core::types::Felt;
 
     use super::{StarknetU256, StarknetU256FromBytesSliceError};
 
@@ -268,7 +268,7 @@ mod tests {
             low: Felt::from_hex_unchecked("0x1234"),
             high: Felt::from_hex_unchecked("0x5678"),
         };
-        let display = format!("{}", value);
+        let display = format!("{value}");
         assert!(display.contains("low: 0x1234"));
         assert!(display.contains("high: 0x5678"));
     }

@@ -1,5 +1,5 @@
-use starknet::core::crypto::EcdsaSignError;
-use starknet::core::types::Felt;
+use starknet_rust::core::crypto::EcdsaSignError;
+use starknet_rust::core::types::Felt;
 
 #[derive(Debug, thiserror::Error)]
 #[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]

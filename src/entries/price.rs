@@ -95,8 +95,7 @@ impl PriceEntry {
                 x if x == crate::schema::Chain::Worldchain as i32 => Chain::Worldchain,
                 _ => {
                     return Err(prost::DecodeError::new(format!(
-                        "Unknown chain value: {}",
-                        chain
+                        "Unknown chain value: {chain}",
                     )))
                 }
             }),

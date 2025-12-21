@@ -4,7 +4,7 @@ async fn test_fallback() {
     use std::str::FromStr;
 
     use pragma_common::starknet::fallback_provider::FallbackProvider;
-    use starknet::{
+    use starknet_rust::{
         macros::felt_hex,
         providers::{Provider, Url},
     };

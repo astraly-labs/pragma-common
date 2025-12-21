@@ -7,11 +7,11 @@ use cainome::cairo_serde::ByteArray;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Number;
-use starknet::core::{
+use starknet_crypto::poseidon_hash_many;
+use starknet_rust::core::{
     types::Felt,
     utils::{cairo_short_string_to_felt, get_selector_from_name},
 };
-use starknet_crypto::poseidon_hash_many;
 
 use crate::starknet::errors::SignerError;
 
@@ -506,8 +506,8 @@ impl TypedData {
 #[cfg(test)]
 mod tests {
     use rstest::*;
-    use starknet::core::types::Felt;
-    use starknet::core::utils::starknet_keccak;
+    use starknet_rust::core::types::Felt;
+    use starknet_rust::core::utils::starknet_keccak;
 
     use super::*;
 

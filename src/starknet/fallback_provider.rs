@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use starknet::{
+use starknet_rust::{
     core::types::{
         BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
         BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
@@ -182,12 +182,11 @@ impl FallbackProvider {
         };
 
         timeout(timeout_duration, wait_future).await.map_err(|_| {
-            ProviderError::StarknetError(starknet::core::types::StarknetError::UnexpectedError(
-                format!(
-                    "Timeout waiting for transaction {:#x} to be accepted on {:?} after {:?}",
-                    tx_hash, target, timeout_duration
-                ),
-            ))
+            ProviderError::StarknetError(
+                starknet_rust::core::types::StarknetError::UnexpectedError(format!(
+                    "Timeout waiting for transaction {tx_hash:#x} to be accepted on {target:?} after {timeout_duration:?}",
+                )),
+            )
         })?
     }
 
@@ -259,6 +258,15 @@ impl FallbackProvider {
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl Provider for FallbackProvider {
+    async fn starknet_version<B>(&self, block_id: B) -> Result<String, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        let owned_block_id = *block_id.as_ref();
+        self.execute_with_fallback(|provider| Box::pin(provider.starknet_version(owned_block_id)))
+            .await
+    }
+
     async fn spec_version(&self) -> Result<String, ProviderError> {
         self.execute_with_fallback(|provider| Box::pin(provider.spec_version()))
             .await

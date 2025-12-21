@@ -55,7 +55,7 @@ impl std::fmt::Display for UpdateType {
 impl std::fmt::Display for OrderbookUpdateType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Update(update_type) => write!(f, "update with type {}", update_type),
+            Self::Update(update_type) => write!(f, "update with type {update_type}"),
             Self::Snapshot => write!(f, "snapshot"),
         }
     }
@@ -157,8 +157,7 @@ impl OrderbookEntry {
                         x if x == crate::schema::UpdateType::Delta as i32 => UpdateType::Delta,
                         _ => {
                             return Err(prost::DecodeError::new(format!(
-                                "Invalid update type value: {}",
-                                update_type_value,
+                                "Invalid update type value: {update_type_value}",
                             )))
                         }
                     };

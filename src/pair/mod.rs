@@ -266,7 +266,7 @@ mod tests {
     #[case(Pair { base: "BTC".to_string(), quote: "USD".to_string() }, "BTC/USD")]
     #[case(Pair { base: "ETH".to_string(), quote: "USDT".to_string() }, "ETH/USDT")]
     fn test_display(#[case] pair: Pair, #[case] expected: &str) {
-        assert_eq!(format!("{}", pair), expected);
+        assert_eq!(format!("{pair}"), expected);
     }
 
     /// Test `From<Pair> for String`
