@@ -17,6 +17,7 @@ pub struct OrderbookEntry {
     pub r#type: OrderbookUpdateType,
     pub data: OrderbookData,
     pub timestamp_ms: i64,
+    pub received_timestamp_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -124,6 +125,7 @@ impl OrderbookEntry {
                     .collect(),
             }),
             timestamp_ms: self.timestamp_ms,
+            received_timestamp_ms: self.received_timestamp_ms,
         }
     }
 
@@ -205,6 +207,7 @@ impl OrderbookEntry {
             r#type,
             data,
             timestamp_ms: proto.timestamp_ms,
+            received_timestamp_ms: proto.received_timestamp_ms,
         })
     }
 }

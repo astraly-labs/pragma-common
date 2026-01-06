@@ -76,6 +76,8 @@ message PriceEntry {
     bool noExpiration = 8;
     int64 expirationTimestamp = 9;
   }
+  InstrumentType instrumentType = 10;
+  int64 receivedTimestampMs = 11;
 }
 
 message OrderbookEntry {
@@ -85,6 +87,7 @@ message OrderbookEntry {
   OrderbookUpdateType type = 4;
   OrderbookData data = 5;
   int64 timestampMs = 6;
+  int64 receivedTimestampMs = 7;
 }
 
 message FundingRateEntry {
@@ -92,6 +95,8 @@ message FundingRateEntry {
   Pair pair = 2;
   double annualizedRate = 3;
   int64 timestampMs = 4;
+  InstrumentType instrumentType = 5;
+  int64 receivedTimestampMs = 6;
 }
 
 message OpenInterestEntry {
@@ -99,6 +104,8 @@ message OpenInterestEntry {
   Pair pair = 2;
   double openInterest = 3;
   int64 timestampMs = 4;
+  InstrumentType instrumentType = 5;
+  int64 receivedTimestampMs = 6;
 }
 
 message VolumeEntry {
@@ -107,6 +114,7 @@ message VolumeEntry {
   Pair pair = 3;
   double volumeDaily = 4;
   int64 timestampMs = 5;
+  int64 receivedTimestampMs = 6;
 }
 
 message TradeEntry {
@@ -120,4 +128,5 @@ message TradeEntry {
   double size = 8;
   double price = 9;
   int64 timestampMs = 10;
+  int64 receivedTimestampMs = 11;
 }

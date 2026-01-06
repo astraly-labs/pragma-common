@@ -23,6 +23,7 @@ pub struct TradeEntry {
     pub size: f64,
     pub price: f64,
     pub timestamp_ms: i64,
+    pub received_timestamp_ms: i64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -69,6 +70,7 @@ impl TradeEntry {
             size: self.size,
             price: self.price,
             timestamp_ms: self.timestamp_ms,
+            received_timestamp_ms: self.received_timestamp_ms,
         }
     }
 
@@ -113,6 +115,7 @@ impl TradeEntry {
             size: proto.size,
             price: proto.price,
             timestamp_ms: proto.timestamp_ms,
+            received_timestamp_ms: proto.received_timestamp_ms,
         })
     }
 }

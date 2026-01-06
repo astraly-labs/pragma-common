@@ -18,16 +18,10 @@ pub struct PriceEntry {
     pub price: u128,
     pub volume: u128,
     pub expiration_timestamp: Option<i64>,
+    pub instrument_type: InstrumentType,
+    pub received_timestamp_ms: i64,
 }
 
-impl PriceEntry {
-    pub fn instrument_type(&self) -> InstrumentType {
-        match self.expiration_timestamp {
-            None => InstrumentType::Spot,
-            Some(_) => InstrumentType::Perp,
-        }
-    }
-}
 
 #[cfg(feature = "proto")]
 impl PriceEntry {
@@ -72,6 +66,11 @@ impl PriceEntry {
                 Some(ts) => crate::schema::price_entry::ExpirationOption::ExpirationTimestamp(ts),
                 None => crate::schema::price_entry::ExpirationOption::NoExpiration(true),
             }),
+            instrument_type: match self.instrument_type {
+                InstrumentType::Spot => crate::schema::InstrumentType::Spot as i32,
+                InstrumentType::Perp => crate::schema::InstrumentType::Perp as i32,
+            },
+            received_timestamp_ms: self.received_timestamp_ms,
         }
     }
 
@@ -134,6 +133,12 @@ impl PriceEntry {
             }
         };
 
+        let instrument_type = match proto.instrument_type {
+            x if x == crate::schema::InstrumentType::Spot as i32 => InstrumentType::Spot,
+            x if x == crate::schema::InstrumentType::Perp as i32 => InstrumentType::Perp,
+            _ => InstrumentType::Spot, // Default for backwards compatibility
+        };
+
         Ok(PriceEntry {
             source: proto.source,
             chain,
@@ -142,6 +147,8 @@ impl PriceEntry {
             price,
             volume,
             expiration_timestamp,
+            instrument_type,
+            received_timestamp_ms: proto.received_timestamp_ms,
         })
     }
 }

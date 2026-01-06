@@ -18,6 +18,7 @@ pub struct VolumeEntry {
     pub pair: Pair,
     pub volume_daily: f64,
     pub timestamp_ms: i64,
+    pub received_timestamp_ms: i64,
 }
 
 #[cfg(feature = "proto")]
@@ -35,6 +36,7 @@ impl VolumeEntry {
             }),
             volume_daily: self.volume_daily,
             timestamp_ms: self.timestamp_ms,
+            received_timestamp_ms: self.received_timestamp_ms,
         }
     }
 
@@ -63,6 +65,7 @@ impl VolumeEntry {
             },
             volume_daily: proto.volume_daily,
             timestamp_ms: proto.timestamp_ms,
+            received_timestamp_ms: proto.received_timestamp_ms,
         })
     }
 }

@@ -1,7 +1,7 @@
 #[cfg(feature = "proto")]
 use prost::Message;
 
-use crate::Pair;
+use crate::{instrument_type::InstrumentType, Pair};
 #[cfg(feature = "proto")]
 use crate::{ProtoDeserialize, ProtoSerialize};
 
@@ -17,6 +17,8 @@ pub struct OpenInterestEntry {
     pub pair: Pair,
     pub open_interest: f64,
     pub timestamp_ms: i64,
+    pub instrument_type: InstrumentType,
+    pub received_timestamp_ms: i64,
 }
 
 #[cfg(feature = "proto")]
@@ -30,6 +32,11 @@ impl OpenInterestEntry {
             }),
             open_interest: self.open_interest,
             timestamp_ms: self.timestamp_ms,
+            instrument_type: match self.instrument_type {
+                InstrumentType::Spot => crate::schema::InstrumentType::Spot as i32,
+                InstrumentType::Perp => crate::schema::InstrumentType::Perp as i32,
+            },
+            received_timestamp_ms: self.received_timestamp_ms,
         }
     }
 
@@ -37,6 +44,11 @@ impl OpenInterestEntry {
         let pair = proto
             .pair
             .ok_or_else(|| prost::DecodeError::new("Missing pair field in OpenInterestEntry"))?;
+        let instrument_type = match proto.instrument_type {
+            x if x == crate::schema::InstrumentType::Spot as i32 => InstrumentType::Spot,
+            x if x == crate::schema::InstrumentType::Perp as i32 => InstrumentType::Perp,
+            _ => InstrumentType::Perp, // Default to Perp for OI (backwards compat)
+        };
 
         Ok(OpenInterestEntry {
             source: proto.source,
@@ -46,6 +58,8 @@ impl OpenInterestEntry {
             },
             open_interest: proto.open_interest,
             timestamp_ms: proto.timestamp_ms,
+            instrument_type,
+            received_timestamp_ms: proto.received_timestamp_ms,
         })
     }
 }

@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use crate::instrument_type::InstrumentType;
+
 const STABLE_SUFFIXES: [&str; 4] = ["USDT", "USDC", "USD", "DAI"];
 
 pub type AssetSymbol = String;
@@ -71,6 +73,17 @@ impl Pair {
     /// Get the pair ID in standard format without consuming self
     pub fn to_pair_id(&self) -> String {
         self.format_with_separator("/")
+    }
+
+    /// Get the market ID in unified format: BASE:QUOTE:TYPE
+    /// Used for ClickHouse joins across different data sources
+    /// instrument_type is formatted in UPPERCASE (SPOT, PERP)
+    pub fn to_market_id(&self, instrument_type: InstrumentType) -> String {
+        let type_str = match instrument_type {
+            InstrumentType::Spot => "SPOT",
+            InstrumentType::Perp => "PERP",
+        };
+        format!("{}:{}:{}", self.base, self.quote, type_str)
     }
 }
 
