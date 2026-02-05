@@ -130,3 +130,13 @@ message TradeEntry {
   int64 timestampMs = 10;
   int64 receivedTimestampMs = 11;
 }
+
+message PositionEntry {
+  string source = 1;
+  InstrumentType instrumentType = 2;
+  Pair pair = 3;
+  int64 timestampMs = 4;
+  int64 receivedTimestampMs = 5;
+  TradeSide side = 6;
+  double notional_in_usd = 7; 
+}

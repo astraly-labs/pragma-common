@@ -10,10 +10,13 @@ pub mod open_interest;
 pub mod volume;
 // Trade entries
 pub mod trade;
+// Position entries
+pub mod position;
 
 pub use funding_rate::*;
 pub use open_interest::*;
 pub use orderbook::*;
+pub use position::*;
 pub use price::*;
 pub use trade::*;
 pub use volume::*;
