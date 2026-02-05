@@ -15,26 +15,26 @@ pub struct GlobalExposureEntry {
     pub source: String,
     pub timestamp_ms: i64,
     pub asset: String,
-    pub exposure: f64,
+    pub exposure_in_usd: f64,
 }
 
 #[cfg(feature = "proto")]
 impl GlobalExposureEntry {
-    fn to_proto(&self) -> crate::schema::GlobalExposure {
-        crate::schema::GlobalExposure {
+    fn to_proto(&self) -> crate::schema::GlobalExposureEntry {
+        crate::schema::GlobalExposureEntry {
             source: self.source.clone(),
             timestamp_ms: self.timestamp_ms,
             asset: self.asset.clone(),
-            exposure: self.exposure,
+            exposure_in_usd: self.exposure_in_usd,
         }
     }
 
-    fn from_proto(proto: crate::schema::GlobalExposure) -> Result<Self, prost::DecodeError> {
+    fn from_proto(proto: crate::schema::GlobalExposureEntry) -> Result<Self, prost::DecodeError> {
         Ok(GlobalExposureEntry {
             source: proto.source,
             timestamp_ms: proto.timestamp_ms,
             asset: proto.asset,
-            exposure: proto.exposure,
+            exposure_in_usd: proto.exposure_in_usd,
         })
     }
 }
@@ -54,8 +54,7 @@ impl ProtoSerialize for GlobalExposureEntry {
 #[cfg(feature = "proto")]
 impl ProtoDeserialize for GlobalExposureEntry {
     fn from_proto_bytes(bytes: &[u8]) -> Result<Self, prost::DecodeError> {
-        let proto = crate::schema::GlobalExposure::decode(bytes)?;
+        let proto = crate::schema::GlobalExposureEntry::decode(bytes)?;
         Self::from_proto(proto)
     }
 }
-
