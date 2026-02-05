@@ -12,8 +12,11 @@ pub mod volume;
 pub mod trade;
 // Position entries
 pub mod position;
+// Global exposure entries
+pub mod global_exposure;
 
 pub use funding_rate::*;
+pub use global_exposure::*;
 pub use open_interest::*;
 pub use orderbook::*;
 pub use position::*;
