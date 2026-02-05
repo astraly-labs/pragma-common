@@ -21,11 +21,13 @@ fn test_price_entry_proto() {
         price: 12000,
         volume: 0,
         expiration_timestamp: Some(0),
+        received_timestamp_ms: 145577,
+        instrument_type: InstrumentType::Perp,
     };
     let payload = x.to_proto_bytes();
     let entry: PriceEntry = PriceEntry::from_proto_bytes(&payload).unwrap();
     assert_eq!(entry, x);
-    assert_eq!(entry.instrument_type(), InstrumentType::Perp);
+    assert_eq!(entry.instrument_type, InstrumentType::Perp);
 }
 
 #[cfg(feature = "proto")]
@@ -42,6 +44,7 @@ fn test_orderbook_update_proto() {
             asks: vec![(42.00, 69.00), (1.00, 42.00)],
         },
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
     };
     let payload = x.to_proto_bytes();
     let orderbook_update: OrderbookEntry = OrderbookEntry::from_proto_bytes(&payload).unwrap();
@@ -62,6 +65,7 @@ fn test_orderbook_snapshot_proto() {
             asks: vec![(42.00, 69.00), (1.00, 42.00)],
         },
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
     };
     let payload = x.to_proto_bytes();
     let orderbook_update: OrderbookEntry = OrderbookEntry::from_proto_bytes(&payload).unwrap();
@@ -82,6 +86,7 @@ fn test_orderbook_delta_proto() {
             asks: vec![(42.00, 69.00), (1.00, 42.00)],
         },
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
     };
     let payload = x.to_proto_bytes();
     let orderbook_update: OrderbookEntry = OrderbookEntry::from_proto_bytes(&payload).unwrap();
@@ -96,6 +101,8 @@ fn test_annualized_rate_proto() {
         pair: Pair::from_currencies("BTC", "USD"),
         annualized_rate: 42.42,
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
+        instrument_type: InstrumentType::Perp,
     };
     let payload = x.to_proto_bytes();
     let entry: FundingRateEntry = FundingRateEntry::from_proto_bytes(&payload).unwrap();
@@ -110,6 +117,8 @@ fn test_open_interest_entry_proto() {
         pair: Pair::from_currencies("BTC", "USD"),
         open_interest: 1000.0,
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
+        instrument_type: InstrumentType::Perp,
     };
     let payload = x.to_proto_bytes();
     let entry: OpenInterestEntry = OpenInterestEntry::from_proto_bytes(&payload).unwrap();
@@ -125,6 +134,7 @@ fn test_volume_entry_proto() {
         pair: Pair::from_currencies("ETH", "USD"),
         volume_daily: 5000.0,
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
     };
     let payload = x.to_proto_bytes();
     let entry: VolumeEntry = VolumeEntry::from_proto_bytes(&payload).unwrap();
@@ -147,6 +157,7 @@ fn test_trade_entry_proto() {
         size: 1.0,
         price: 101_024.0,
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
     };
 
     let payload = x.to_proto_bytes();
@@ -165,6 +176,7 @@ fn test_trade_entry_proto() {
         size: 1.0,
         price: 101_024.0,
         timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
     };
 
     let payload = x.to_proto_bytes();
