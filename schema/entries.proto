@@ -140,3 +140,10 @@ message PositionEntry {
   TradeSide side = 6;
   double notional_in_usd = 7; 
 }
+
+message GlobalExposureEntry {
+  string source = 1;
+  int64 timestampMs = 2;
+  string asset = 3;
+  double exposure_in_usd = 4; 
+}

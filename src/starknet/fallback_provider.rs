@@ -36,20 +36,22 @@ pub enum WaitForTarget {
 ///
 /// # Example
 /// ```no_run
-/// use starknet_providers::{FallbackProvider, jsonrpc::{HttpTransport, JsonRpcClient}};
+/// use starknet_rust::providers::{Provider, jsonrpc::{HttpTransport, JsonRpcClient}};
+/// use url::Url;
+/// use pragma_common::starknet::FallbackProvider;
 ///
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 /// // Create with a list of RPC URLs
 /// let provider = FallbackProvider::new(vec![
-///     "[https://primary-rpc.example.com](https://primary-rpc.example.com)",
-///     "[https://secondary-rpc.example.com](https://secondary-rpc.example.com)",
-///     "[https://tertiary-rpc.example.com](https://tertiary-rpc.example.com)",
+///     Url::parse("https://primary-rpc.example.com")?,
+///     Url::parse("https://secondary-rpc.example.com")?,
+///     Url::parse("https://tertiary-rpc.example.com")?,
 /// ])?;
 ///
 /// // Or create from existing clients
 /// let clients = vec![
-///     JsonRpcClient::new(HttpTransport::new("[https://primary-rpc.example.com](https://primary-rpc.example.com)")),
-///     JsonRpcClient::new(HttpTransport::new("[https://secondary-rpc.example.com](https://secondary-rpc.example.com)")),
+///     JsonRpcClient::new(HttpTransport::new(Url::parse("https://primary-rpc.example.com")?)),
+///     JsonRpcClient::new(HttpTransport::new(Url::parse("https://secondary-rpc.example.com")?)),
 /// ];
 /// let provider = FallbackProvider::from_clients(clients);
 ///
