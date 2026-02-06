@@ -19,6 +19,7 @@ pub struct PositionEntry {
     pub received_timestamp_ms: i64,
     pub side: TradeSide,
     pub notional_in_usd: f64,
+    pub size: f64,
 }
 #[cfg(feature = "proto")]
 impl PositionEntry {
@@ -40,6 +41,7 @@ impl PositionEntry {
                 TradeSide::Sell => crate::schema::TradeSide::Sell as i32,
             },
             notional_in_usd: self.notional_in_usd,
+            size: self.size,
         }
     }
     fn from_proto(proto: crate::schema::PositionEntry) -> Result<Self, prost::DecodeError> {
@@ -80,6 +82,7 @@ impl PositionEntry {
             received_timestamp_ms: proto.received_timestamp_ms,
             side,
             notional_in_usd: proto.notional_in_usd,
+            size: proto.size,
         })
     }
 }
