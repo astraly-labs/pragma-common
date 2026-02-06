@@ -15,7 +15,7 @@ pub struct GlobalExposureEntry {
     pub source: String,
     pub timestamp_ms: i64,
     pub asset: String,
-    pub exposure_in_usd: f64,
+    pub size: f64,
 }
 
 #[cfg(feature = "proto")]
@@ -25,7 +25,7 @@ impl GlobalExposureEntry {
             source: self.source.clone(),
             timestamp_ms: self.timestamp_ms,
             asset: self.asset.clone(),
-            exposure_in_usd: self.exposure_in_usd,
+            size: self.size,
         }
     }
 
@@ -34,7 +34,7 @@ impl GlobalExposureEntry {
             source: proto.source,
             timestamp_ms: proto.timestamp_ms,
             asset: proto.asset,
-            exposure_in_usd: proto.exposure_in_usd,
+            size: proto.size,
         })
     }
 }
