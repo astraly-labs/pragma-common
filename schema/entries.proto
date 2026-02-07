@@ -144,7 +144,8 @@ message PositionEntry {
 
 message GlobalExposureEntry {
   string source = 1;
-  int64 timestampMs = 2;
+  int64 timestamp_ms= 2;
   string asset = 3;
-  double size = 4; 
+  double gross_position_size = 4; 
+  double net_position_size = 5; 
 }
