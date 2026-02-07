@@ -15,7 +15,8 @@ pub struct GlobalExposureEntry {
     pub source: String,
     pub timestamp_ms: i64,
     pub asset: String,
-    pub size: f64,
+    pub gross_position_size: f64,
+    pub net_position_size: f64,
 }
 
 #[cfg(feature = "proto")]
@@ -25,7 +26,8 @@ impl GlobalExposureEntry {
             source: self.source.clone(),
             timestamp_ms: self.timestamp_ms,
             asset: self.asset.clone(),
-            size: self.size,
+            gross_position_size: self.gross_position_size,
+            net_position_size: self.net_position_size,
         }
     }
 
@@ -34,7 +36,8 @@ impl GlobalExposureEntry {
             source: proto.source,
             timestamp_ms: proto.timestamp_ms,
             asset: proto.asset,
-            size: proto.size,
+            gross_position_size: proto.gross_position_size,
+            net_position_size: proto.net_position_size,
         })
     }
 }
