@@ -173,7 +173,8 @@ message PositionEntry {
   int64 timestampMs = 4;
   int64 receivedTimestampMs = 5;
   TradeSide side = 6;
-  double notional_in_usd = 7; 
+  reserved 7;
+  reserved "notional_in_usd";
   double size = 8; 
   Contract contract = 9;
 }

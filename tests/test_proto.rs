@@ -153,7 +153,6 @@ fn test_position_entry_proto_with_contract() {
         timestamp_ms: 145567,
         received_timestamp_ms: 145577,
         side: TradeSide::Buy,
-        notional_in_usd: 1_000.0,
         size: 10.0,
         contract: Some(Contract::from_cme_symbol("CLK6").unwrap()),
     };

@@ -18,7 +18,6 @@ pub struct PositionEntry {
     pub timestamp_ms: i64,
     pub received_timestamp_ms: i64,
     pub side: TradeSide,
-    pub notional_in_usd: f64,
     pub size: f64,
     pub contract: Option<Contract>,
 }
@@ -41,7 +40,6 @@ impl PositionEntry {
                 TradeSide::Buy => crate::schema::TradeSide::Buy as i32,
                 TradeSide::Sell => crate::schema::TradeSide::Sell as i32,
             },
-            notional_in_usd: self.notional_in_usd,
             size: self.size,
             contract: self.contract.map(Contract::to_proto),
         }
@@ -83,7 +81,6 @@ impl PositionEntry {
             timestamp_ms: proto.timestamp_ms,
             received_timestamp_ms: proto.received_timestamp_ms,
             side,
-            notional_in_usd: proto.notional_in_usd,
             size: proto.size,
             contract: proto.contract.map(Contract::from_proto).transpose()?,
         })
