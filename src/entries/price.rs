@@ -22,7 +22,6 @@ pub struct PriceEntry {
     pub received_timestamp_ms: i64,
 }
 
-
 #[cfg(feature = "proto")]
 impl PriceEntry {
     fn to_proto(&self) -> crate::schema::PriceEntry {

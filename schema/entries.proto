@@ -51,6 +51,41 @@ message Pair {
   string quote = 2;
 }
 
+enum FuturesMonth {
+  FUTURES_MONTH_UNSPECIFIED = 0;
+  FUTURES_MONTH_JANUARY = 1;
+  FUTURES_MONTH_FEBRUARY = 2;
+  FUTURES_MONTH_MARCH = 3;
+  FUTURES_MONTH_APRIL = 4;
+  FUTURES_MONTH_MAY = 5;
+  FUTURES_MONTH_JUNE = 6;
+  FUTURES_MONTH_JULY = 7;
+  FUTURES_MONTH_AUGUST = 8;
+  FUTURES_MONTH_SEPTEMBER = 9;
+  FUTURES_MONTH_OCTOBER = 10;
+  FUTURES_MONTH_NOVEMBER = 11;
+  FUTURES_MONTH_DECEMBER = 12;
+}
+
+enum FuturesYearFormat {
+  FUTURES_YEAR_FORMAT_UNSPECIFIED = 0;
+  FUTURES_YEAR_FORMAT_ONE_DIGIT = 1;
+  FUTURES_YEAR_FORMAT_TWO_DIGIT = 2;
+}
+
+message FuturesContract {
+  string root = 1;
+  FuturesMonth month = 2;
+  uint32 year = 3;
+  FuturesYearFormat yearFormat = 4;
+}
+
+message Contract {
+  oneof value {
+    FuturesContract futures = 1;
+  }
+}
+
 message BidOrAsk {
   double price = 1;
   double quantity = 2;
@@ -140,6 +175,7 @@ message PositionEntry {
   TradeSide side = 6;
   double notional_in_usd = 7; 
   double size = 8; 
+  Contract contract = 9;
 }
 
 message GlobalExposureEntry {

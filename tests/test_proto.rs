@@ -3,11 +3,13 @@ use pragma_common::{
     entries::funding_rate::FundingRateEntry,
     entries::open_interest::OpenInterestEntry,
     entries::orderbook::{OrderbookData, OrderbookEntry, OrderbookUpdateType, UpdateType},
+    entries::position::PositionEntry,
     entries::price::PriceEntry,
+    entries::trade::TradeSide,
     entries::volume::VolumeEntry,
     instrument_type::InstrumentType,
     web3::Chain,
-    Pair, ProtoDeserialize, ProtoSerialize,
+    Contract, Pair, ProtoDeserialize, ProtoSerialize,
 };
 
 #[cfg(feature = "proto")]
@@ -138,6 +140,27 @@ fn test_volume_entry_proto() {
     };
     let payload = x.to_proto_bytes();
     let entry: VolumeEntry = VolumeEntry::from_proto_bytes(&payload).unwrap();
+    assert_eq!(entry, x);
+}
+
+#[cfg(feature = "proto")]
+#[test]
+fn test_position_entry_proto_with_contract() {
+    let x = PositionEntry {
+        source: "TEST".to_string(),
+        instrument_type: InstrumentType::Perp,
+        pair: Pair::from_currencies("WTI", "USD"),
+        timestamp_ms: 145567,
+        received_timestamp_ms: 145577,
+        side: TradeSide::Buy,
+        notional_in_usd: 1_000.0,
+        size: 10.0,
+        contract: Some(Contract::from_cme_symbol("CLK6").unwrap()),
+    };
+
+    let payload = x.to_proto_bytes();
+    let entry: PositionEntry = PositionEntry::from_proto_bytes(&payload).unwrap();
+
     assert_eq!(entry, x);
 }
 
