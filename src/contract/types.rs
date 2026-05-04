@@ -40,6 +40,12 @@ impl Contract {
         }
     }
 
+    pub fn contract_month_yyyymm(&self) -> String {
+        match self {
+            Self::Futures(contract) => contract.contract_month_yyyymm(),
+        }
+    }
+
     pub fn validate_against_date(
         &self,
         date: chrono::NaiveDate,
@@ -86,6 +92,10 @@ impl FuturesContract {
             self.month.code(),
             self.year % 100
         )
+    }
+
+    pub fn contract_month_yyyymm(&self) -> String {
+        format!("{}{:02}", self.year, self.month.number())
     }
 
     pub fn validate_against_date(
@@ -249,7 +259,7 @@ impl FuturesMonth {
         }
     }
 
-    pub(super) fn number(self) -> u8 {
+    pub const fn number(self) -> u8 {
         match self {
             Self::January => 1,
             Self::February => 2,

@@ -78,6 +78,13 @@ mod tests {
     }
 
     #[test]
+    fn contract_exposes_contract_month_yyyymm() {
+        let contract = Contract::from_raw_symbol("CLM6").unwrap();
+
+        assert_eq!(contract.contract_month_yyyymm(), "202606");
+    }
+
+    #[test]
     fn contract_validation_accepts_reasonable_reference_date() {
         let contract = FuturesContractBuilder::raw("PLJ6").build().unwrap();
         let reference_date = NaiveDate::from_ymd_opt(2026, 3, 24).unwrap();
