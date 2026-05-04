@@ -1,6 +1,7 @@
 #[cfg(feature = "proto")]
 use prost::Message;
 
+use crate::contract::Contract;
 #[cfg(feature = "proto")]
 use crate::{ProtoDeserialize, ProtoSerialize};
 
@@ -17,6 +18,7 @@ pub struct GlobalExposureEntry {
     pub asset: String,
     pub gross_position_size: f64,
     pub net_position_size: f64,
+    pub contract: Option<Contract>,
 }
 
 #[cfg(feature = "proto")]
@@ -28,6 +30,7 @@ impl GlobalExposureEntry {
             asset: self.asset.clone(),
             gross_position_size: self.gross_position_size,
             net_position_size: self.net_position_size,
+            contract: self.contract.map(Contract::to_proto),
         }
     }
 
@@ -38,6 +41,7 @@ impl GlobalExposureEntry {
             asset: proto.asset,
             gross_position_size: proto.gross_position_size,
             net_position_size: proto.net_position_size,
+            contract: proto.contract.map(Contract::from_proto).transpose()?,
         })
     }
 }
@@ -59,5 +63,26 @@ impl ProtoDeserialize for GlobalExposureEntry {
     fn from_proto_bytes(bytes: &[u8]) -> Result<Self, prost::DecodeError> {
         let proto = crate::schema::GlobalExposureEntry::decode(bytes)?;
         Self::from_proto(proto)
+    }
+}
+
+#[cfg(all(test, feature = "proto"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn proto_roundtrip_preserves_contract() {
+        let entry = GlobalExposureEntry {
+            source: "EXPOSURE_AGGREGATOR".to_string(),
+            timestamp_ms: 1,
+            asset: "WTI".to_string(),
+            gross_position_size: 10.0,
+            net_position_size: -4.0,
+            contract: Some(Contract::from_raw_symbol("CLK6").unwrap()),
+        };
+
+        let decoded = GlobalExposureEntry::from_proto_bytes(&entry.to_proto_bytes()).unwrap();
+
+        assert_eq!(decoded, entry);
     }
 }

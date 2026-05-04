@@ -184,4 +184,5 @@ message GlobalExposureEntry {
   string asset = 3;
   double gross_position_size = 4; 
   double net_position_size = 5; 
+  Contract contract = 6;
 }
