@@ -67,17 +67,10 @@ enum FuturesMonth {
   FUTURES_MONTH_DECEMBER = 12;
 }
 
-enum FuturesYearFormat {
-  FUTURES_YEAR_FORMAT_UNSPECIFIED = 0;
-  FUTURES_YEAR_FORMAT_ONE_DIGIT = 1;
-  FUTURES_YEAR_FORMAT_TWO_DIGIT = 2;
-}
-
 message FuturesContract {
   string root = 1;
   FuturesMonth month = 2;
   uint32 year = 3;
-  FuturesYearFormat yearFormat = 4;
 }
 
 message Contract {

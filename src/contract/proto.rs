@@ -1,4 +1,4 @@
-use super::{Contract, FuturesContract, FuturesMonth, FuturesRoot, YearFormat};
+use super::{Contract, FuturesContract, FuturesMonth, FuturesRoot};
 
 impl Contract {
     pub(crate) fn to_proto(self) -> crate::schema::Contract {
@@ -25,7 +25,6 @@ impl FuturesContract {
             root: self.root.cme_code().to_string(),
             month: self.month.to_proto_i32(),
             year: u32::from(self.year),
-            year_format: self.year_format.to_proto_i32(),
         }
     }
 
@@ -35,33 +34,8 @@ impl FuturesContract {
         let month = FuturesMonth::from_proto_i32(proto.month)?;
         let year = u16::try_from(proto.year)
             .map_err(|_| prost::DecodeError::new("Invalid futures contract year"))?;
-        let year_format = YearFormat::from_proto_i32(proto.year_format)?;
 
-        Ok(Self {
-            root,
-            month,
-            year,
-            year_format,
-        })
-    }
-}
-
-impl YearFormat {
-    fn to_proto_i32(self) -> i32 {
-        match self {
-            Self::OneDigit => 1,
-            Self::TwoDigit => 2,
-        }
-    }
-
-    fn from_proto_i32(value: i32) -> Result<Self, prost::DecodeError> {
-        match value {
-            1 => Ok(Self::OneDigit),
-            2 => Ok(Self::TwoDigit),
-            _ => Err(prost::DecodeError::new(format!(
-                "Invalid futures year format value: {value}",
-            ))),
-        }
+        Ok(Self { root, month, year })
     }
 }
 

@@ -24,7 +24,7 @@ pub use pair::{AssetSymbol, Pair, RawMarketName};
 pub mod contract;
 pub use contract::{
     Contract, FuturesContract, FuturesContractBuilder, FuturesContractParseError, FuturesMonth,
-    FuturesRoot, YearFormat,
+    FuturesRoot,
 };
 
 // Exchange

@@ -1,6 +1,6 @@
 use chrono::Datelike;
 
-use super::{FuturesContract, FuturesContractParseError, FuturesMonth, FuturesRoot, YearFormat};
+use super::{FuturesContract, FuturesContractParseError, FuturesMonth, FuturesRoot};
 
 #[derive(Debug, Clone, Copy)]
 pub struct FuturesContractBuilder<'a> {
@@ -37,14 +37,9 @@ impl<'a> FuturesContractBuilder<'a> {
         let root = FuturesRoot::new(&root)?;
         let month = FuturesMonth::from_code(month_char)
             .ok_or(FuturesContractParseError::InvalidMonthCode(month_char))?;
-        let (year, year_format) = normalize_year(year_str)?;
+        let year = normalize_year(year_str)?;
 
-        Ok(FuturesContract {
-            root,
-            month,
-            year,
-            year_format,
-        })
+        Ok(FuturesContract { root, month, year })
     }
 
     pub fn build(self) -> Result<FuturesContract, FuturesContractParseError> {
@@ -73,18 +68,13 @@ impl<'a> FuturesContractBuilder<'a> {
         let root = FuturesRoot::new(root)?;
         let month = FuturesMonth::from_code(month_char)
             .ok_or(FuturesContractParseError::InvalidMonthCode(month_char))?;
-        let (year, year_format) = normalize_year(year_str)?;
+        let year = normalize_year(year_str)?;
 
-        Ok(FuturesContract {
-            root,
-            month,
-            year,
-            year_format,
-        })
+        Ok(FuturesContract { root, month, year })
     }
 }
 
-fn normalize_year(year_str: &str) -> Result<(u16, YearFormat), FuturesContractParseError> {
+fn normalize_year(year_str: &str) -> Result<u16, FuturesContractParseError> {
     let year_short: u16 = year_str
         .parse()
         .map_err(|_| FuturesContractParseError::InvalidYear(year_str.to_string()))?;
@@ -99,9 +89,9 @@ fn normalize_year(year_str: &str) -> Result<(u16, YearFormat), FuturesContractPa
             if full_year + 1 < current_year {
                 full_year += 10;
             }
-            Ok((full_year, YearFormat::OneDigit))
+            Ok(full_year)
         }
-        2 => Ok((2000 + year_short, YearFormat::TwoDigit)),
+        2 => Ok(2000 + year_short),
         _ => Err(FuturesContractParseError::InvalidYear(year_str.to_string())),
     }
 }

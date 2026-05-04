@@ -6,7 +6,7 @@ mod types;
 
 pub use builder::FuturesContractBuilder;
 pub use errors::FuturesContractParseError;
-pub use types::{Contract, FuturesContract, FuturesMonth, FuturesRoot, YearFormat};
+pub use types::{Contract, FuturesContract, FuturesMonth, FuturesRoot};
 
 #[cfg(test)]
 mod tests {
@@ -16,11 +16,11 @@ mod tests {
     use super::*;
 
     #[rstest]
-    #[case("plj6", "PL", FuturesMonth::April, 2026, "PLJ6")]
+    #[case("plj6", "PL", FuturesMonth::April, 2026, "PLJ26")]
     #[case("NGK26", "NG", FuturesMonth::May, 2026, "NGK26")]
-    #[case("RTYM6", "RTY", FuturesMonth::June, 2026, "RTYM6")]
-    #[case("6EZ6", "6E", FuturesMonth::December, 2026, "6EZ6")]
-    #[case("ABCJ6", "ABC", FuturesMonth::April, 2026, "ABCJ6")]
+    #[case("RTYM6", "RTY", FuturesMonth::June, 2026, "RTYM26")]
+    #[case("6EZ6", "6E", FuturesMonth::December, 2026, "6EZ26")]
+    #[case("ABCJ6", "ABC", FuturesMonth::April, 2026, "ABCJ26")]
     fn parses_supported_raw_contracts(
         #[case] raw: &str,
         #[case] root: &str,
@@ -73,8 +73,8 @@ mod tests {
     fn contract_enum_exposes_raw_symbol() {
         let contract = Contract::from_raw_symbol("CLK6").unwrap();
 
-        assert_eq!(contract.raw_symbol(), "CLK6");
-        assert_eq!(contract.to_string(), "CLK6");
+        assert_eq!(contract.raw_symbol(), "CLK26");
+        assert_eq!(contract.to_string(), "CLK26");
     }
 
     #[test]

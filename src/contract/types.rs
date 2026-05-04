@@ -76,21 +76,15 @@ pub struct FuturesContract {
     pub root: FuturesRoot,
     pub month: FuturesMonth,
     pub year: u16,
-    pub year_format: YearFormat,
 }
 
 impl FuturesContract {
     pub fn raw_symbol(&self) -> String {
-        let year_suffix = match self.year_format {
-            YearFormat::OneDigit => format!("{}", self.year % 10),
-            YearFormat::TwoDigit => format!("{:02}", self.year % 100),
-        };
-
         format!(
-            "{}{}{}",
+            "{}{}{:02}",
             self.root.cme_code(),
             self.month.code(),
-            year_suffix
+            self.year % 100
         )
     }
 
@@ -195,18 +189,6 @@ impl<'de> serde::Deserialize<'de> for FuturesRoot {
         let root = <String as serde::Deserialize>::deserialize(deserializer)?;
         Self::new(&root).map_err(serde::de::Error::custom)
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-    feature = "borsh",
-    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
-)]
-#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
-pub enum YearFormat {
-    OneDigit,
-    TwoDigit,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
