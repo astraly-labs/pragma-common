@@ -18,7 +18,7 @@ impl<'a> FuturesContractBuilder<'a> {
             .split_once('/')
             .ok_or_else(|| FuturesContractParseError::InvalidRoot(activ_symbol.to_string()))?;
 
-        let root = root.trim().to_ascii_uppercase();
+        let root = root.trim();
         if root.is_empty() {
             return Err(FuturesContractParseError::InvalidRoot(
                 activ_symbol.to_string(),
@@ -28,42 +28,7 @@ impl<'a> FuturesContractBuilder<'a> {
             return Err(FuturesContractParseError::MissingMonthCode);
         }
 
-        let month_char = year_month
-            .chars()
-            .last()
-            .ok_or(FuturesContractParseError::MissingMonthCode)?;
-        let year_str = &year_month[..year_month.len() - 1];
-
-        let root = FuturesRoot::new(&root)?;
-        let month = FuturesMonth::from_code(month_char)
-            .ok_or(FuturesContractParseError::InvalidMonthCode(month_char))?;
-        let year = normalize_year(year_str)?;
-
-        Ok(FuturesContract { root, month, year })
-    }
-
-    pub fn build(self) -> Result<FuturesContract, FuturesContractParseError> {
-        let normalized = self.raw_symbol.trim().to_ascii_uppercase();
-        if normalized.is_empty() {
-            return Err(FuturesContractParseError::Empty);
-        }
-
-        let month_pos = normalized
-            .rfind(|c: char| c.is_ascii_alphabetic())
-            .ok_or(FuturesContractParseError::MissingMonthCode)?;
-        let root = &normalized[..month_pos];
-        let month_char = normalized
-            .chars()
-            .nth(month_pos)
-            .ok_or(FuturesContractParseError::MissingMonthCode)?;
-        let year_str = &normalized[month_pos + 1..];
-
-        if year_str.is_empty() {
-            return Err(FuturesContractParseError::MissingYear);
-        }
-        if !year_str.chars().all(|c| c.is_ascii_digit()) {
-            return Err(FuturesContractParseError::InvalidYear(year_str.to_string()));
-        }
+        let (year_str, month_char) = split_last_char(year_month.trim())?;
 
         let root = FuturesRoot::new(root)?;
         let month = FuturesMonth::from_code(month_char)
@@ -72,6 +37,50 @@ impl<'a> FuturesContractBuilder<'a> {
 
         Ok(FuturesContract { root, month, year })
     }
+
+    pub fn build(self) -> Result<FuturesContract, FuturesContractParseError> {
+        let raw_symbol = self.raw_symbol.trim();
+        if raw_symbol.is_empty() {
+            return Err(FuturesContractParseError::Empty);
+        }
+
+        let (root, month_char, year_str) = split_raw_contract_symbol(raw_symbol)?;
+
+        let root = FuturesRoot::new(root)?;
+        let month = FuturesMonth::from_code(month_char)
+            .ok_or(FuturesContractParseError::InvalidMonthCode(month_char))?;
+        let year = normalize_year(year_str)?;
+
+        Ok(FuturesContract { root, month, year })
+    }
+}
+
+fn split_last_char(value: &str) -> Result<(&str, char), FuturesContractParseError> {
+    value
+        .char_indices()
+        .last()
+        .map(|(index, character)| (&value[..index], character))
+        .ok_or(FuturesContractParseError::MissingMonthCode)
+}
+
+fn split_raw_contract_symbol(
+    raw_symbol: &str,
+) -> Result<(&str, char, &str), FuturesContractParseError> {
+    let (month_pos, month_char) = raw_symbol
+        .char_indices()
+        .rfind(|(_, c)| c.is_ascii_alphabetic())
+        .ok_or(FuturesContractParseError::MissingMonthCode)?;
+    let (root, month_and_year) = raw_symbol.split_at(month_pos);
+    let (_, year_str) = month_and_year.split_at(month_char.len_utf8());
+
+    if year_str.is_empty() {
+        return Err(FuturesContractParseError::MissingYear);
+    }
+    if !year_str.bytes().all(|c| c.is_ascii_digit()) {
+        return Err(FuturesContractParseError::InvalidYear(year_str.to_string()));
+    }
+
+    Ok((root, month_char, year_str))
 }
 
 fn normalize_year(year_str: &str) -> Result<u16, FuturesContractParseError> {
@@ -86,7 +95,7 @@ fn normalize_year(year_str: &str) -> Result<u16, FuturesContractParseError> {
                 .map_err(|_| FuturesContractParseError::InvalidYear(year_str.to_string()))?;
             let decade = (current_year / 10) * 10;
             let mut full_year = decade + year_short;
-            if full_year + 1 < current_year {
+            if full_year < current_year {
                 full_year += 10;
             }
             Ok(full_year)

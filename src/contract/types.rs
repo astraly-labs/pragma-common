@@ -143,7 +143,7 @@ pub struct FuturesRoot {
 
 impl FuturesRoot {
     pub fn new(root: &str) -> Result<Self, FuturesContractParseError> {
-        let normalized = root.trim().to_ascii_uppercase();
+        let normalized = root.trim();
         if normalized.is_empty()
             || normalized.len() > MAX_FUTURES_ROOT_LEN
             || !normalized.bytes().all(|byte| byte.is_ascii_alphanumeric())
@@ -152,7 +152,9 @@ impl FuturesRoot {
         }
 
         let mut bytes = [0; MAX_FUTURES_ROOT_LEN];
-        bytes[..normalized.len()].copy_from_slice(normalized.as_bytes());
+        for (output, input) in bytes.iter_mut().zip(normalized.bytes()) {
+            *output = input.to_ascii_uppercase();
+        }
 
         Ok(Self {
             len: u8::try_from(normalized.len()).expect("MAX_FUTURES_ROOT_LEN must fit in u8"),

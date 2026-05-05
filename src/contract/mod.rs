@@ -36,6 +36,14 @@ mod tests {
         assert_eq!(contract.to_string(), display);
     }
 
+    #[test]
+    fn one_digit_year_normalizes_to_current_or_next_decade() {
+        let contract = FuturesContractBuilder::raw("CLZ5").build().unwrap();
+
+        assert_eq!(contract.year, 2035);
+        assert_eq!(contract.to_string(), "CLZ35");
+    }
+
     #[rstest]
     #[case("GC", FuturesContractParseError::MissingYear)]
     #[case("6", FuturesContractParseError::MissingMonthCode)]
