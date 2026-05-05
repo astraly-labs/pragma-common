@@ -56,22 +56,25 @@ impl<'a> FuturesContractBuilder<'a> {
 }
 
 fn split_last_char(value: &str) -> Result<(&str, char), FuturesContractParseError> {
-    value
-        .char_indices()
-        .last()
-        .map(|(index, character)| (&value[..index], character))
+    let mut chars = value.chars();
+    chars
+        .next_back()
+        .map(|character| (chars.as_str(), character))
         .ok_or(FuturesContractParseError::MissingMonthCode)
 }
 
 fn split_raw_contract_symbol(
     raw_symbol: &str,
 ) -> Result<(&str, char, &str), FuturesContractParseError> {
-    let (month_pos, month_char) = raw_symbol
-        .char_indices()
-        .rfind(|(_, c)| c.is_ascii_alphabetic())
+    let bytes = raw_symbol.as_bytes();
+    let month_pos = bytes
+        .iter()
+        .rposition(|byte| byte.is_ascii_alphabetic())
         .ok_or(FuturesContractParseError::MissingMonthCode)?;
-    let (root, month_and_year) = raw_symbol.split_at(month_pos);
-    let (_, year_str) = month_and_year.split_at(month_char.len_utf8());
+
+    let root = &raw_symbol[..month_pos];
+    let month_char = bytes[month_pos] as char;
+    let year_str = &raw_symbol[month_pos + 1..];
 
     if year_str.is_empty() {
         return Err(FuturesContractParseError::MissingYear);
@@ -84,15 +87,23 @@ fn split_raw_contract_symbol(
 }
 
 fn normalize_year(year_str: &str) -> Result<u16, FuturesContractParseError> {
+    let current_year = chrono::Utc::now().date_naive().year();
+    let current_year = u16::try_from(current_year)
+        .map_err(|_| FuturesContractParseError::InvalidYear(year_str.to_string()))?;
+
+    normalize_year_for_current_year(year_str, current_year)
+}
+
+fn normalize_year_for_current_year(
+    year_str: &str,
+    current_year: u16,
+) -> Result<u16, FuturesContractParseError> {
     let year_short: u16 = year_str
         .parse()
         .map_err(|_| FuturesContractParseError::InvalidYear(year_str.to_string()))?;
 
     match year_str.len() {
         1 => {
-            let current_year = chrono::Utc::now().date_naive().year();
-            let current_year = u16::try_from(current_year)
-                .map_err(|_| FuturesContractParseError::InvalidYear(year_str.to_string()))?;
             let decade = (current_year / 10) * 10;
             let mut full_year = decade + year_short;
             if full_year < current_year {
@@ -102,5 +113,27 @@ fn normalize_year(year_str: &str) -> Result<u16, FuturesContractParseError> {
         }
         2 => Ok(2000 + year_short),
         _ => Err(FuturesContractParseError::InvalidYear(year_str.to_string())),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    use super::normalize_year_for_current_year;
+
+    #[rstest]
+    #[case("6", 2026, 2026)]
+    #[case("5", 2026, 2035)]
+    #[case("0", 2029, 2030)]
+    fn one_digit_years_never_normalize_to_the_past(
+        #[case] year: &str,
+        #[case] current_year: u16,
+        #[case] expected: u16,
+    ) {
+        assert_eq!(
+            normalize_year_for_current_year(year, current_year).unwrap(),
+            expected
+        );
     }
 }

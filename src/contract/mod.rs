@@ -10,7 +10,7 @@ pub use types::{Contract, FuturesContract, FuturesMonth, FuturesRoot};
 
 #[cfg(test)]
 mod tests {
-    use chrono::NaiveDate;
+    use chrono::{Datelike, NaiveDate};
     use rstest::rstest;
 
     use super::*;
@@ -39,9 +39,12 @@ mod tests {
     #[test]
     fn one_digit_year_normalizes_to_current_or_next_decade() {
         let contract = FuturesContractBuilder::raw("CLZ5").build().unwrap();
+        let current_year =
+            u16::try_from(chrono::Utc::now().date_naive().year()).expect("year fits in u16");
 
-        assert_eq!(contract.year, 2035);
-        assert_eq!(contract.to_string(), "CLZ35");
+        assert_eq!(contract.year % 10, 5);
+        assert!(contract.year >= current_year);
+        assert!(contract.year < current_year + 10);
     }
 
     #[rstest]
@@ -75,6 +78,13 @@ mod tests {
         assert_eq!(contract.month, FuturesMonth::June);
         assert_eq!(contract.year, 2026);
         assert_eq!(contract.raw_symbol(), "GCM26");
+    }
+
+    #[test]
+    fn activ_parser_rejects_invalid_month_code() {
+        let error = FuturesContractBuilder::activ("GC/26A").unwrap_err();
+
+        assert_eq!(error, FuturesContractParseError::InvalidMonthCode('A'));
     }
 
     #[test]
