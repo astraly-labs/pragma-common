@@ -20,6 +20,13 @@ pub use trading::Side;
 pub mod pair;
 pub use pair::{AssetSymbol, Pair, RawMarketName};
 
+// Contracts
+pub mod contract;
+pub use contract::{
+    Contract, FuturesContract, FuturesContractBuilder, FuturesContractParseError, FuturesMonth,
+    FuturesRoot,
+};
+
 // Exchange
 pub mod exchange;
 pub use exchange::{Exchange, MarginType};
