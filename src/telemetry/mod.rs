@@ -68,22 +68,37 @@ pub fn init_telemetry(
 
     let shutdown_called = Arc::new(AtomicBool::new(false));
     if let Some(endpoint) = collection_endpoint {
-        let tracer_provider = init_tracer_provider(app_name, &endpoint)?;
-        let logger_provider = init_logs_provider(app_name, &endpoint)?;
-        let metrics_provider = init_meter_provider(app_name, &endpoint)?;
+        let traces_exporter = std::env::var("OTEL_TRACES_EXPORTER").ok();
+        let logs_exporter = std::env::var("OTEL_LOGS_EXPORTER").ok();
+        let metrics_exporter = std::env::var("OTEL_METRICS_EXPORTER").ok();
+
+        let tracer_provider = signal_export_enabled(traces_exporter.as_deref())
+            .then(|| init_tracer_provider(app_name, &endpoint))
+            .transpose()?;
+        let logger_provider = signal_export_enabled(logs_exporter.as_deref())
+            .then(|| init_logs_provider(app_name, &endpoint))
+            .transpose()?;
+        let metrics_provider = signal_export_enabled(metrics_exporter.as_deref())
+            .then(|| init_meter_provider(app_name, &endpoint))
+            .transpose()?;
+
+        let trace_layer = tracer_provider.as_ref().map(|provider| {
+            OpenTelemetryLayer::new(provider.tracer(format!("{app_name}-subscriber")))
+        });
+        let logs_layer = logger_provider
+            .as_ref()
+            .map(OpenTelemetryTracingBridge::new);
 
         tracing_subscriber
             .with(tracing_subscriber::fmt::layer())
-            .with(OpenTelemetryLayer::new(
-                tracer_provider.tracer(format!("{app_name}-subscriber")),
-            ))
-            .with(OpenTelemetryTracingBridge::new(&logger_provider))
+            .with(trace_layer)
+            .with(logs_layer)
             .try_init()?;
 
         Ok(ProviderSet {
-            tracer_provider: Some(tracer_provider),
-            logger_provider: Some(logger_provider),
-            metrics_provider: Some(metrics_provider),
+            tracer_provider,
+            logger_provider,
+            metrics_provider,
             shutdown_called,
         })
     } else {
@@ -108,6 +123,10 @@ pub fn init_telemetry(
             shutdown_called,
         })
     }
+}
+
+fn signal_export_enabled(exporter: Option<&str>) -> bool {
+    !matches!(exporter, Some("none"))
 }
 
 fn init_tracer_provider(
@@ -187,4 +206,17 @@ pub fn init_meter_provider(
     global::set_meter_provider(metrics_provider.clone());
 
     Ok(metrics_provider)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::signal_export_enabled;
+
+    #[test]
+    fn none_disables_a_signal_exporter_without_changing_defaults() {
+        assert!(!signal_export_enabled(Some("none")));
+        assert!(signal_export_enabled(None));
+        assert!(signal_export_enabled(Some("")));
+        assert!(signal_export_enabled(Some("otlp")));
+    }
 }
