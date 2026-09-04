@@ -135,12 +135,12 @@ impl TryFrom<(String, String)> for Pair {
     fn try_from(pair: (String, String)) -> anyhow::Result<Self> {
         let (base, quote) = pair;
 
-        if !base.chars().all(|c| c.is_ascii_alphabetic()) {
-            anyhow::bail!("Invalid base symbol: only ASCII letters allowed");
+        if !base.chars().all(|c| c.is_ascii_alphanumeric()) {
+            anyhow::bail!("Invalid base symbol: only ASCII letters and digits allowed");
         }
 
-        if !quote.chars().all(|c| c.is_ascii_alphabetic()) {
-            anyhow::bail!("Invalid quote symbol: only ASCII letters allowed");
+        if !quote.chars().all(|c| c.is_ascii_alphanumeric()) {
+            anyhow::bail!("Invalid quote symbol: only ASCII letters and digits allowed");
         }
 
         Ok(Self {
@@ -324,9 +324,21 @@ mod tests {
     #[rstest]
     #[case(("btc".to_string(), "usd".to_string()), Pair { base: "BTC".to_string(), quote: "USD".to_string() })]
     #[case(("Eth".to_string(), "Dai".to_string()), Pair { base: "ETH".to_string(), quote: "DAI".to_string() })]
+    #[case(("mre7btc".to_string(), "usd".to_string()), Pair { base: "MRE7BTC".to_string(), quote: "USD".to_string() })]
+    #[case(("MRE7YIELD".to_string(), "USD".to_string()), Pair { base: "MRE7YIELD".to_string(), quote: "USD".to_string() })]
+    #[case(("BTC".to_string(), "mre7btc".to_string()), Pair { base: "BTC".to_string(), quote: "MRE7BTC".to_string() })]
     fn test_from_tuple(#[case] input: (String, String), #[case] expected: Pair) {
         let pair: Pair = input.try_into().unwrap();
         assert_eq!(pair, expected);
+    }
+
+    #[rstest]
+    #[case("BTC/USD", "USD")]
+    #[case("BTC", "US D")]
+    #[case("ÉTH", "USD")]
+    #[case("BTC", "USD'")]
+    fn test_from_tuple_rejects_invalid_symbols(#[case] base: &str, #[case] quote: &str) {
+        assert!(Pair::try_from((base.to_string(), quote.to_string())).is_err());
     }
 
     /// Test the `pair!` macro with valid inputs
